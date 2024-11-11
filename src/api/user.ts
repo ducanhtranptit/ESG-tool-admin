@@ -5,4 +5,9 @@ export default class UserAPI {
 		const url = "/webapp/users/profile";
 		return await ApiSender.get(url);
 	}
+
+	public static async getAllAccounts(): Promise<any> {
+		const url = "/admin/account/get-all-accounts";
+		return await ApiSender.get(url);
+	}
 }

@@ -4,7 +4,7 @@ import "./styles.css"
 const App: React.FC = () => {
 	return (
 		<div>
-			<h1>Đây là trang DashBoard</h1>
+			<h1>Hello World</h1>
 		</div>
 	);
 };
