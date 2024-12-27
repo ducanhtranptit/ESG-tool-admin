@@ -5,11 +5,19 @@ import Navbar from "../components/Navbar";
 const DefaultLayout: React.FC = () => {
 	return (
 		<div>
-			<div className="row">
-				<div className="col-2">
+			<div className="row" style={{ flexWrap: "nowrap" }}>
+				<div style={{ display: "flex", width: "250px" }}>
 					<SideBar />
 				</div>
-				<div className="content col-10">
+				<div
+					style={{
+						flex: 1,
+						maxWidth: "calc(100vw - 250px)",
+						backgroundColor: "#f4f6f9",
+						height: "100vh",
+						overflowX: "hidden",
+					}}
+				>
 					<Navbar />
 					<div>
 						<Outlet />

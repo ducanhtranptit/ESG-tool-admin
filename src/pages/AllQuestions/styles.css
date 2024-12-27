@@ -1,0 +1,25 @@
+.table {
+	table-layout: auto;
+	width: 100%;
+	white-space: nowrap;
+}
+
+.table th,
+.table td {
+	max-width: 500px;
+	min-width: 120px;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sticky-col {
+	position: sticky;
+	left: 0;
+	background-color: white;
+	z-index: 1;
+}
+
+.sticky-col + .sticky-col {
+	left: 131px;
+}

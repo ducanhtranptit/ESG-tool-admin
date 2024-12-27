@@ -1,5 +1,5 @@
 .side-bar {
-	width: 16.666666666666666%; /* Giữ nguyên chiều rộng của sidebar */
+	width: 250px; /* Giữ nguyên chiều rộng của sidebar */
 	height: 100vh;
 	background-color: #505d69;
 	padding: 20px;
@@ -14,7 +14,7 @@
 }
 
 .side-bar h1 {
-	font-size: 2.5vw; /* Sử dụng vw để kích thước chữ co giãn theo kích thước màn hình */
+	font-size: 30px; /* Sử dụng vw để kích thước chữ co giãn theo kích thước màn hình */
 	color: #ffffff;
 	margin-bottom: 30px;
 	text-align: left;
@@ -30,7 +30,7 @@
 .side-bar ul {
 	list-style: none;
 	padding: 0;
-	width: 100%;
+	width: 220px;
 	flex-grow: 1;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .side-bar ul li p {
-	font-size: 1.2rem;
+	font-size: 10px;
 	color: #ffffff;
 	padding: 10px 20px;
 	margin: 0;
@@ -68,16 +68,17 @@
 	color: #ffffff;
 	padding: 8px 10px;
 	border-radius: 4px;
-	font-size: 1.1vw; /* Sử dụng vw để co giãn kích thước chữ theo màn hình */
+	font-size: 17px;
 	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .nav-link:hover {
-    color: #ffffff; /* Giữ màu trắng khi hover */
+    color: #ffffff; 
+	background-color: black;
 }
 
 .submenu .dropdown-item:hover {
-    color: #ffffff; /* Giữ màu trắng khi hover */
+    color: #ffffff; 
 }
 
 .nav-link .transition-transform {
@@ -88,7 +89,7 @@
 
 .submenu .dropdown-item {
 	padding-left: 20px;
-	font-size: 1vw; /* Kích thước chữ linh hoạt */
+	font-size: 15px; /* Kích thước chữ linh hoạt */
 	color: #ffffff;
 	margin-bottom: 8px;
 	transition: color 0.3s ease;

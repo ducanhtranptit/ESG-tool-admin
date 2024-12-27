@@ -1,0 +1,11 @@
+.table-site-info,
+.table-product-info {
+	overflow-x: auto;
+	max-width: 2000px;
+	min-width: 100px;
+}
+
+.wide-column {
+	min-width: 200px;
+	overflow: hidden;
+}

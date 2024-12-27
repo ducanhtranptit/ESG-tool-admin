@@ -12,14 +12,49 @@
 	padding-right: 0 !important;
 }
 
-.col-2 {
-	left: 0;
-	top: 0;
-	height: 100vh;
+.content-wrapper {
+	margin: 20px;
+	padding: 10px;
+	height: auto;
+	background-color: white;
+	box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
 }
-.col-10 {
-	padding-left: 40px;
-	right: 0;
-	top: 0;
-	height: 100vh;
+
+.card {
+	margin: 10px;
+}
+
+.hr-line {
+	border: none;
+	border-top: 1px solid #000;
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.card-header button {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.pagination-container {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	bottom: 0;
+	background-color: white;
+	z-index: 1;
+	padding: 10px 20px;
+}
+
+.items-per-page-select {
+	margin-left: 1rem;
+}
+
+.table-wrapper {
+	overflow-x: auto;
+	white-space: nowrap;
 }

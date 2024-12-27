@@ -1,6 +1,7 @@
 .navbar {
 	display: flex;
 	justify-content: flex-end;
+	background-color: white;
 	position: sticky;
 	color: black;
 	width: 100%;
