@@ -1,2 +1,2 @@
-export const ACCESSTOKEN_KEY = "access_token";
-export const REFRESHTOKEN_KEY = "refresh_token";
+export const ACCESSTOKEN_KEY = "esg_tool.admin.access_token";
+export const REFRESHTOKEN_KEY = "esg_tool.admin.refresh_token";

@@ -95,8 +95,8 @@ const AccountPage: React.FC = () => {
 			<section className="content-header">
 				<div className="container-fluid">
 					<div className="row mb-2">
-						<div className="col-sm-6">
-							<h1>Danh sách tài khoản</h1>
+						<div>
+							<h1>Overall company information management</h1>
 						</div>
 					</div>
 				</div>

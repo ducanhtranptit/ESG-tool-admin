@@ -77,7 +77,7 @@ const AccountPage: React.FC = () => {
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Danh sách tài khoản</h1>
+							<h1>Account management</h1>
 						</div>
 					</div>
 				</div>
@@ -162,11 +162,11 @@ const AccountPage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th style={{ width: "10px" }}>UserId</th>
-								<th style={{ width: "60px" }}>Username</th>
-								<th style={{ width: "25px" }}>Company Code</th>
-								<th style={{ width: "40px" }}>Status</th>
-								<th style={{ width: "400px" }}>Actions</th>
+								<th>UserId</th>
+								<th>Username</th>
+								<th>Company Code</th>
+								<th>Status</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
 						<tbody>

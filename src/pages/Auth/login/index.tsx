@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 interface FormData {
 	username: string;
 	password: string;
+	user?: any;
 }
 
 const Login: React.FC = () => {
@@ -45,6 +46,10 @@ const Login: React.FC = () => {
 				setCookie(REFRESHTOKEN_KEY, response.data.refreshToken, {
 					expires: 1,
 				});
+				localStorage.setItem(
+					"user",
+					JSON.stringify(response.data.user)
+				);
 				navigate("/");
 			}
 		} catch (error) {

@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
-import ExampleAPI from "../../api/example";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { Spinner, Table, Button, Card, Form, Row, Col } from "react-bootstrap";
+import {
+	Spinner,
+	Table,
+	Button,
+	Card,
+	Form,
+	Row,
+	Col,
+	Pagination,
+} from "react-bootstrap";
+import ExampleAPI from "../../api/example";
 import "./styles.css";
 
 interface Data {
@@ -18,11 +27,14 @@ interface Data {
 
 const ExamplePage: React.FC = () => {
 	const [accounts, setAccounts] = useState<Data[]>([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [itemsPerPage, setItemsPerPage] = useState(10);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
 	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	const totalPages = Math.ceil(accounts.length / itemsPerPage);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -40,16 +52,83 @@ const ExamplePage: React.FC = () => {
 		fetchData();
 	}, []);
 
-	const handleEdit = () => {};
+	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+	const handleItemsPerPageChange = (
+		event: React.ChangeEvent<HTMLSelectElement>
+	) => {
+		setItemsPerPage(Number(event.target.value));
+		setCurrentPage(1);
+	};
 
 	const handleSearch = () => {
 		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
 	};
 
 	const handleAddNew = () => {
 		console.log("Adding new user");
 	};
+
+	const handleEdit = () => {
+		console.log("Editing item");
+	};
+
+	const renderPaginationItems = () => {
+		const items = [];
+
+		if (currentPage > 3) {
+			items.push(
+				<Pagination.Item
+					key={1}
+					active={1 === currentPage}
+					onClick={() => paginate(1)}
+				>
+					1
+				</Pagination.Item>
+			);
+			if (currentPage > 4) {
+				items.push(<Pagination.Ellipsis key="start-ellipsis" />);
+			}
+		}
+
+		for (
+			let i = Math.max(1, currentPage - 2);
+			i <= Math.min(totalPages, currentPage + 2);
+			i++
+		) {
+			items.push(
+				<Pagination.Item
+					key={i}
+					active={i === currentPage}
+					onClick={() => paginate(i)}
+				>
+					{i}
+				</Pagination.Item>
+			);
+		}
+
+		if (currentPage < totalPages - 2) {
+			if (currentPage < totalPages - 3) {
+				items.push(<Pagination.Ellipsis key="end-ellipsis" />);
+			}
+			items.push(
+				<Pagination.Item
+					key={totalPages}
+					active={totalPages === currentPage}
+					onClick={() => paginate(totalPages)}
+				>
+					{totalPages}
+				</Pagination.Item>
+			);
+		}
+
+		return items;
+	};
+
+	const currentData = accounts.slice(
+		(currentPage - 1) * itemsPerPage,
+		currentPage * itemsPerPage
+	);
 
 	if (loading) {
 		return (
@@ -77,7 +156,7 @@ const ExamplePage: React.FC = () => {
 					</div>
 				</div>
 			</section>
-			<hr className="hr-line" />
+
 			<div className="d-flex justify-content-end mb-3">
 				<Button
 					className="add-new-button"
@@ -96,17 +175,13 @@ const ExamplePage: React.FC = () => {
 					style={{ cursor: "pointer" }}
 				>
 					<h4 className="mb-0">Filter</h4>
-					{isFilterOpen ? (
-						<FaChevronUp className="ms-2" />
-					) : (
-						<FaChevronDown className="ms-2" />
-					)}
+					{isFilterOpen ? <FaChevronUp /> : <FaChevronDown />}
 				</Card.Header>
 				{isFilterOpen && (
 					<Card.Body>
-						<Row className="align-items-center row-spacing">
-							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
+						<Row>
+							<Col md={3}>
+								<Form.Group controlId="searchQuery">
 									<Form.Label>Search</Form.Label>
 									<Form.Control
 										type="text"
@@ -120,11 +195,10 @@ const ExamplePage: React.FC = () => {
 							</Col>
 							<Col
 								md={8}
-								className="d-flex justify-content-end col-spacing"
+								className="d-flex align-items-end justify-content-end"
 							>
 								<Button
 									variant="primary"
-									className="mt-4"
 									onClick={handleSearch}
 								>
 									Search
@@ -148,7 +222,7 @@ const ExamplePage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{accounts.map((data, index) => (
+							{currentData.map((data, index) => (
 								<tr key={index}>
 									<td>{data.data1}</td>
 									<td>{data.data2}</td>
@@ -160,7 +234,7 @@ const ExamplePage: React.FC = () => {
 											size="sm"
 											onClick={() => handleEdit()}
 										>
-											<FaEdit /> Sửa
+											<FaEdit /> Edit
 										</Button>
 									</td>
 								</tr>
@@ -168,6 +242,32 @@ const ExamplePage: React.FC = () => {
 						</tbody>
 					</Table>
 				</Card.Body>
+
+				<div className="pagination-container">
+					<Pagination className="mb-0">
+						<Pagination.Prev
+							onClick={() => paginate(currentPage - 1)}
+							disabled={currentPage === 1}
+						/>
+						{renderPaginationItems()}
+						<Pagination.Next
+							onClick={() => paginate(currentPage + 1)}
+							disabled={currentPage === totalPages}
+						/>
+					</Pagination>
+
+					<Form.Select
+						value={itemsPerPage}
+						onChange={handleItemsPerPageChange}
+						className="ms-3 items-per-page-select pagination-controls"
+						style={{ width: "130px" }}
+					>
+						<option value={10}>10 / page</option>
+						<option value={20}>20 / page</option>
+						<option value={50}>50 / page</option>
+						<option value={100}>100 / page</option>
+					</Form.Select>
+				</div>
 			</Card>
 		</div>
 	);
