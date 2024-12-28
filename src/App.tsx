@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import Dashboard from "./pages/DashBoard"; 
+import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Auth/login";
 import PrivateRoute from "./routers/PrivateRouter";
 import DefaultLayout from "./layouts/DefaultLayout";
