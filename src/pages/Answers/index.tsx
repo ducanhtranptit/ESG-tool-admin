@@ -12,6 +12,7 @@ import {
 	Pagination,
 } from "react-bootstrap";
 import QuestionAPI from "../../api/question";
+import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
@@ -46,7 +47,7 @@ const AllAnswersPage: React.FC = () => {
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (err) {
-				setError("Không thể lấy dữ liệu từ API");
+				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
@@ -129,6 +130,7 @@ const AllAnswersPage: React.FC = () => {
 
 	return (
 		<div className="content-wrapper">
+			<ToastContainer />
 			<section className="content-header">
 				<div className="container-fluid">
 					<div className="row mb-2">
