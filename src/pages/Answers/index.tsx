@@ -47,6 +47,7 @@ const AllAnswersPage: React.FC = () => {
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (err) {
+				console.log(err);
 				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
