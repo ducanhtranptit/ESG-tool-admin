@@ -2,7 +2,16 @@ import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import ExampleAPI from "../../api/example";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { Spinner, Table, Button, Card, Form, Row, Col } from "react-bootstrap";
+import {
+	Spinner,
+	Table,
+	Button,
+	Card,
+	Form,
+	Row,
+	Col,
+	Pagination,
+} from "react-bootstrap";
 import "./styles.css";
 
 interface Data {
@@ -23,13 +32,22 @@ const ExamplePage: React.FC = () => {
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
 	const [searchUsername, setSearchUsername] = useState<string>("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+	const [totalPages, setTotalPages] = useState<number>(1);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const response = await ExampleAPI.getData();
-				setAccounts(response.data);
+				const response = await ExampleAPI.getData(
+					currentPage,
+					itemsPerPage,
+					statusFilter
+				);
+
+				setAccounts(response.data || []);
+				setTotalPages(response.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
 				setError("Không thể lấy dữ liệu từ API");
@@ -38,13 +56,68 @@ const ExamplePage: React.FC = () => {
 		};
 
 		fetchData();
-	}, []);
-
-	const handleEdit = () => {};
+	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
 
 	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
+		setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+	};
+
+	const handleItemsPerPageChange = (
+		event: React.ChangeEvent<HTMLSelectElement>
+	) => {
+		setItemsPerPage(Number(event.target.value));
+		setCurrentPage(1);
+	};
+
+	const renderPaginationItems = () => {
+		const items = [];
+
+		if (currentPage > 3) {
+			items.push(
+				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+					1
+				</Pagination.Item>
+			);
+			if (currentPage > 4) {
+				items.push(<Pagination.Ellipsis key="start-ellipsis" />);
+			}
+		}
+
+		for (
+			let i = Math.max(1, currentPage - 2);
+			i <= Math.min(totalPages, currentPage + 2);
+			i++
+		) {
+			items.push(
+				<Pagination.Item
+					key={i}
+					active={i === currentPage}
+					onClick={() => setCurrentPage(i)}
+				>
+					{i}
+				</Pagination.Item>
+			);
+		}
+
+		if (currentPage < totalPages - 2) {
+			if (currentPage < totalPages - 3) {
+				items.push(<Pagination.Ellipsis key="end-ellipsis" />);
+			}
+			items.push(
+				<Pagination.Item
+					key={totalPages}
+					onClick={() => setCurrentPage(totalPages)}
+				>
+					{totalPages}
+				</Pagination.Item>
+			);
+		}
+
+		return items;
+	};
+
+	const handleEdit = () => {
+		console.log("Editing item");
 	};
 
 	const handleAddNew = () => {
@@ -168,6 +241,38 @@ const ExamplePage: React.FC = () => {
 						</tbody>
 					</Table>
 				</Card.Body>
+
+				<div className="pagination-container">
+					<Pagination className="mb-0">
+						<Pagination.Prev
+							onClick={() =>
+								setCurrentPage((prev) => Math.max(prev - 1, 1))
+							}
+							disabled={currentPage === 1}
+						/>
+						{renderPaginationItems()}
+						<Pagination.Next
+							onClick={() =>
+								setCurrentPage((prev) =>
+									Math.min(prev + 1, totalPages)
+								)
+							}
+							disabled={currentPage === totalPages}
+						/>
+					</Pagination>
+
+					<Form.Select
+						value={itemsPerPage}
+						onChange={handleItemsPerPageChange}
+						className="ms-3 items-per-page-select"
+						style={{ width: "130px" }}
+					>
+						<option value={10}>10 / page</option>
+						<option value={20}>20 / page</option>
+						<option value={50}>50 / page</option>
+						<option value={100}>100 / page</option>
+					</Form.Select>
+				</div>
 			</Card>
 		</div>
 	);

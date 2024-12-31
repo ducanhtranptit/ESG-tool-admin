@@ -1,50 +1,122 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
-import ExampleAPI from "../../api/example";
+import QuestionAPI from "../../api/question";
+import CompanyAPI from "../../api/company";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { Spinner, Table, Button, Card, Form, Row, Col } from "react-bootstrap";
+import {
+	Spinner,
+	Table,
+	Button,
+	Card,
+	Form,
+	Row,
+	Col,
+	Pagination,
+} from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	data1?: any;
-	data2?: any;
-	data3?: any;
-	data4?: any;
-	data5?: any;
-	data6?: any;
-	data7?: any;
-	data8?: any;
+	companyCode?: any;
+	companyName?: any;
+	industryId?: any;
+	industryCodeLevel2?: any;
 }
 
-const ExamplePage: React.FC = () => {
-	const [accounts, setAccounts] = useState<Data[]>([]);
+const DummiesPage: React.FC = () => {
+	const [dummies, setDummies] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
 	const [searchUsername, setSearchUsername] = useState<string>("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+	const [totalPages, setTotalPages] = useState<number>(1);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const response = await ExampleAPI.getData();
-				setAccounts(response.data);
+				const response = await CompanyAPI.getAllCompany(
+					currentPage,
+					itemsPerPage
+					// statusFilter
+				);
+				console.log("response: ", response);
+				setDummies(response.data.data || []);
+				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
-				setError("Không thể lấy dữ liệu từ API");
+				console.log(error);
+				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
 
 		fetchData();
-	}, []);
-
-	const handleEdit = () => {};
+	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
 
 	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
+		setCurrentPage(1);
+	};
+
+	const handleItemsPerPageChange = (
+		event: React.ChangeEvent<HTMLSelectElement>
+	) => {
+		setItemsPerPage(Number(event.target.value));
+		setCurrentPage(1);
+	};
+
+	const renderPaginationItems = () => {
+		const items = [];
+
+		if (currentPage > 3) {
+			items.push(
+				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+					1
+				</Pagination.Item>
+			);
+			if (currentPage > 4) {
+				items.push(<Pagination.Ellipsis key="start-ellipsis" />);
+			}
+		}
+
+		for (
+			let i = Math.max(1, currentPage - 2);
+			i <= Math.min(totalPages, currentPage + 2);
+			i++
+		) {
+			items.push(
+				<Pagination.Item
+					key={i}
+					active={i === currentPage}
+					onClick={() => setCurrentPage(i)}
+				>
+					{i}
+				</Pagination.Item>
+			);
+		}
+
+		if (currentPage < totalPages - 2) {
+			if (currentPage < totalPages - 3) {
+				items.push(<Pagination.Ellipsis key="end-ellipsis" />);
+			}
+			items.push(
+				<Pagination.Item
+					key={totalPages}
+					onClick={() => setCurrentPage(totalPages)}
+				>
+					{totalPages}
+				</Pagination.Item>
+			);
+		}
+
+		return items;
+	};
+
+	const handleEdit = () => {
+		console.log("Editing item");
 	};
 
 	const handleAddNew = () => {
@@ -68,11 +140,12 @@ const ExamplePage: React.FC = () => {
 
 	return (
 		<div className="content-wrapper">
+			<ToastContainer />
 			<section className="content-header">
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Tên trang</h1>
+							<h1>Companies Management</h1>
 						</div>
 					</div>
 				</div>
@@ -140,20 +213,20 @@ const ExamplePage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
+								<th>Company code</th>
+								<th>Company name</th>
+								<th>Industry ID</th>
+								<th>Industry code level 2</th>
+								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							{accounts.map((data, index) => (
+							{dummies.map((data, index) => (
 								<tr key={index}>
-									<td>{data.data1}</td>
-									<td>{data.data2}</td>
-									<td>{data.data3}</td>
-									<td>{data.data4}</td>
+									<td>{data.companyCode}</td>
+									<td>{data.companyName}</td>
+									<td>{data.industryId}</td>
+									<td>{data.industryCodeLevel2}</td>
 									<td>
 										<Button
 											variant="primary"
@@ -168,9 +241,41 @@ const ExamplePage: React.FC = () => {
 						</tbody>
 					</Table>
 				</Card.Body>
+
+				<div className="pagination-container">
+					<Pagination className="mb-0">
+						<Pagination.Prev
+							onClick={() =>
+								setCurrentPage((prev) => Math.max(prev - 1, 1))
+							}
+							disabled={currentPage === 1}
+						/>
+						{renderPaginationItems()}
+						<Pagination.Next
+							onClick={() =>
+								setCurrentPage((prev) =>
+									Math.min(prev + 1, totalPages)
+								)
+							}
+							disabled={currentPage === totalPages}
+						/>
+					</Pagination>
+
+					<Form.Select
+						value={itemsPerPage}
+						onChange={handleItemsPerPageChange}
+						className="ms-3 items-per-page-select"
+						style={{ width: "130px" }}
+					>
+						<option value={10}>10 / page</option>
+						<option value={20}>20 / page</option>
+						<option value={50}>50 / page</option>
+						<option value={100}>100 / page</option>
+					</Form.Select>
+				</div>
 			</Card>
 		</div>
 	);
 };
 
-export default ExamplePage;
+export default DummiesPage;
