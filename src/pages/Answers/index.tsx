@@ -11,48 +11,52 @@ import {
 	Col,
 	Pagination,
 } from "react-bootstrap";
-import ExampleAPI from "../../api/example";
+import QuestionAPI from "../../api/question";
 import "./styles.css";
 
 interface Data {
-	data1?: any;
-	data2?: any;
-	data3?: any;
-	data4?: any;
-	data5?: any;
-	data6?: any;
-	data7?: any;
-	data8?: any;
+	questionCode?: string;
+	questionName?: string;
+	companyCode?: string;
+	year?: number;
+	answer?: string;
 }
 
-const ExamplePage: React.FC = () => {
+const AllAnswersPage: React.FC = () => {
 	const [accounts, setAccounts] = useState<Data[]>([]);
-	const [currentPage, setCurrentPage] = useState(1);
-	const [itemsPerPage, setItemsPerPage] = useState(10);
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
+	const [searchQuery, setSearchQuery] = useState<string>("");
+	const [totalPages, setTotalPages] = useState<number>(1);
 
-	const totalPages = Math.ceil(accounts.length / itemsPerPage);
-
+	// Fetch data from API
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const response = await ExampleAPI.getData();
-				setAccounts(response.data);
+				const response = await QuestionAPI.getAllAnswers(
+					currentPage,
+					itemsPerPage
+					// searchQuery
+				);
+				setAccounts(response.data.data || []);
+				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
-			} catch (error) {
+			} catch (err) {
 				setError("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
 
 		fetchData();
-	}, []);
+	}, [currentPage, itemsPerPage, searchQuery]);
 
-	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+	const handleSearch = () => {
+		setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+	};
 
 	const handleItemsPerPageChange = (
 		event: React.ChangeEvent<HTMLSelectElement>
@@ -61,28 +65,12 @@ const ExamplePage: React.FC = () => {
 		setCurrentPage(1);
 	};
 
-	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-	};
-
-	const handleAddNew = () => {
-		console.log("Adding new user");
-	};
-
-	const handleEdit = () => {
-		console.log("Editing item");
-	};
-
 	const renderPaginationItems = () => {
 		const items = [];
 
 		if (currentPage > 3) {
 			items.push(
-				<Pagination.Item
-					key={1}
-					active={1 === currentPage}
-					onClick={() => paginate(1)}
-				>
+				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
 					1
 				</Pagination.Item>
 			);
@@ -100,7 +88,7 @@ const ExamplePage: React.FC = () => {
 				<Pagination.Item
 					key={i}
 					active={i === currentPage}
-					onClick={() => paginate(i)}
+					onClick={() => setCurrentPage(i)}
 				>
 					{i}
 				</Pagination.Item>
@@ -114,8 +102,7 @@ const ExamplePage: React.FC = () => {
 			items.push(
 				<Pagination.Item
 					key={totalPages}
-					active={totalPages === currentPage}
-					onClick={() => paginate(totalPages)}
+					onClick={() => setCurrentPage(totalPages)}
 				>
 					{totalPages}
 				</Pagination.Item>
@@ -124,11 +111,6 @@ const ExamplePage: React.FC = () => {
 
 		return items;
 	};
-
-	const currentData = accounts.slice(
-		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage
-	);
 
 	if (loading) {
 		return (
@@ -151,13 +133,13 @@ const ExamplePage: React.FC = () => {
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Answer management</h1>
+							<h1>Answer Management</h1>
 						</div>
 					</div>
 				</div>
 			</section>
-			<hr className="hr-line" />
-			<Card className="shadow-sm card-filter">
+
+			<Card className="shadow-sm card-filter mb-4">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
 					onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -174,10 +156,10 @@ const ExamplePage: React.FC = () => {
 									<Form.Label>Search</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="Search by question name"
+										value={searchQuery}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchQuery(e.target.value)
 										}
 									/>
 								</Form.Group>
@@ -204,27 +186,29 @@ const ExamplePage: React.FC = () => {
 						<Table className="table table-bordered">
 							<thead>
 								<tr>
-									<th>Question code</th>
-									<th>Question name</th>
-									<th>Company code</th>
+									<th>Question Code</th>
+									<th>Question Name</th>
+									<th>Company Code</th>
 									<th>Year</th>
 									<th>Answer</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								{currentData.map((data, index) => (
+								{accounts.map((data, index) => (
 									<tr key={index}>
-										<td>{data.data1}</td>
-										<td>{data.data2}</td>
-										<td>{data.data3}</td>
-										<td>{data.data4}</td>
-										<td>{data.data5}</td>
+										<td>{data.questionCode}</td>
+										<td>{data.questionName}</td>
+										<td>{data.companyCode}</td>
+										<td>{data.year}</td>
+										<td>{data.answer}</td>
 										<td>
 											<Button
 												variant="primary"
 												size="sm"
-												onClick={() => handleEdit()}
+												onClick={() =>
+													console.log("Edit")
+												}
 											>
 												<FaEdit /> Edit
 											</Button>
@@ -239,12 +223,18 @@ const ExamplePage: React.FC = () => {
 				<div className="pagination-container">
 					<Pagination className="mb-0">
 						<Pagination.Prev
-							onClick={() => paginate(currentPage - 1)}
+							onClick={() =>
+								setCurrentPage((prev) => Math.max(prev - 1, 1))
+							}
 							disabled={currentPage === 1}
 						/>
 						{renderPaginationItems()}
 						<Pagination.Next
-							onClick={() => paginate(currentPage + 1)}
+							onClick={() =>
+								setCurrentPage((prev) =>
+									Math.min(prev + 1, totalPages)
+								)
+							}
 							disabled={currentPage === totalPages}
 						/>
 					</Pagination>
@@ -252,7 +242,7 @@ const ExamplePage: React.FC = () => {
 					<Form.Select
 						value={itemsPerPage}
 						onChange={handleItemsPerPageChange}
-						className="ms-3 items-per-page-select pagination-controls"
+						className="ms-3 items-per-page-select"
 						style={{ width: "130px" }}
 					>
 						<option value={10}>10 / page</option>
@@ -266,4 +256,4 @@ const ExamplePage: React.FC = () => {
 	);
 };
 
-export default ExamplePage;
+export default AllAnswersPage;
