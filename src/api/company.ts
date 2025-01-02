@@ -13,4 +13,17 @@ export default class CompanyAPI extends ApiSender {
 		const url = `/admin/conpany-metric-all?page=${page}&limit=${limit}`;
 		return await CompanyAPI.get(url);
 	}
+
+	public static async getAllCompanyScore(
+		page: any,
+		limit: any
+	): Promise<any> {
+		const url = `/admin/conpany-score-all?page=${page}&limit=${limit}`;
+		return await CompanyAPI.get(url);
+	}
+
+	public static async getAllIndustries(page: any, limit: any): Promise<any> {
+		const url = `/admin/industry-all?page=${page}&limit=${limit}`;
+		return await CompanyAPI.get(url);
+	}
 }

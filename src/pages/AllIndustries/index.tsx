@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import ExampleAPI from "../../api/example";
+import CompanyAPI from "../../api/company";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
@@ -12,21 +11,17 @@ import {
 	Col,
 	Pagination,
 } from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	data1?: any;
-	data2?: any;
-	data3?: any;
-	data4?: any;
-	data5?: any;
-	data6?: any;
-	data7?: any;
-	data8?: any;
+	level1?: any;
+	level2?: any;
+	industryName?: any;
 }
 
-const ExamplePage: React.FC = () => {
-	const [accounts, setAccounts] = useState<Data[]>([]);
+const DummiesPage: React.FC = () => {
+	const [dummies, setDummies] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
@@ -40,17 +35,18 @@ const ExamplePage: React.FC = () => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const response = await ExampleAPI.getData(
+				console.log(statusFilter);
+				const response = await CompanyAPI.getAllIndustries(
 					currentPage,
-					itemsPerPage,
-					statusFilter
+					itemsPerPage
+					// statusFilter
 				);
-
-				setAccounts(response.data || []);
-				setTotalPages(response.totalPages || 1);
+				setDummies(response.data.data || []);
+				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
-				setError("Không thể lấy dữ liệu từ API");
+				console.log(error);
+				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
@@ -59,7 +55,7 @@ const ExamplePage: React.FC = () => {
 	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
 
 	const handleSearch = () => {
-		setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -116,14 +112,6 @@ const ExamplePage: React.FC = () => {
 		return items;
 	};
 
-	const handleEdit = () => {
-		console.log("Editing item");
-	};
-
-	const handleAddNew = () => {
-		console.log("Adding new user");
-	};
-
 	if (loading) {
 		return (
 			<div
@@ -141,27 +129,17 @@ const ExamplePage: React.FC = () => {
 
 	return (
 		<div className="content-wrapper">
+			<ToastContainer />
 			<section className="content-header">
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Tên trang</h1>
+							<h1>Company Score Management</h1>
 						</div>
 					</div>
 				</div>
 			</section>
 			<hr className="hr-line" />
-			<div className="d-flex justify-content-end mb-3">
-				<Button
-					className="add-new-button"
-					variant="primary"
-					size="sm"
-					onClick={handleAddNew}
-				>
-					Add New
-				</Button>
-			</div>
-
 			<Card className="shadow-sm card-filter">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
@@ -213,29 +191,17 @@ const ExamplePage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
+								<th>Level-1 Industry Code</th>
+								<th>Level-2 Industry Code</th>
+								<th>Industry Name</th>
 							</tr>
 						</thead>
 						<tbody>
-							{accounts.map((data, index) => (
+							{dummies.map((data, index) => (
 								<tr key={index}>
-									<td>{data.data1}</td>
-									<td>{data.data2}</td>
-									<td>{data.data3}</td>
-									<td>{data.data4}</td>
-									<td>
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={() => handleEdit()}
-										>
-											<FaEdit /> Sửa
-										</Button>
-									</td>
+									<td>{data.level1}</td>
+									<td>{data.level2}</td>
+									<td>{data.industryName}</td>
 								</tr>
 							))}
 						</tbody>
@@ -278,4 +244,4 @@ const ExamplePage: React.FC = () => {
 	);
 };
 
-export default ExamplePage;
+export default DummiesPage;

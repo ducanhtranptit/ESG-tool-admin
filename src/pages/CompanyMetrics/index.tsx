@@ -21,6 +21,7 @@ interface Data {
 	companyCode?: any;
 	year?: any;
 	metric?: any;
+	rank?: any;
 }
 
 const DummiesPage: React.FC = () => {
@@ -218,6 +219,7 @@ const DummiesPage: React.FC = () => {
 								<th>Company code</th>
 								<th>Year</th>
 								<th>Metric</th>
+								<th>Rank</th>
 								<th>Action</th>
 							</tr>
 						</thead>
@@ -229,6 +231,7 @@ const DummiesPage: React.FC = () => {
 									<td>{data.companyCode}</td>
 									<td>{data.year}</td>
 									<td>{data.metric}</td>
+									<td>{data.rank}</td>
 									<td>
 										<Button
 											variant="primary"

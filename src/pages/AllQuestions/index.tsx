@@ -44,10 +44,6 @@ const AllQuestionPage: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-
-	// -------------------------------------
-	// Chỉnh sửa: Tạo 2 state riêng cho searchName và searchTopic
-	// -------------------------------------
 	const [searchName, setSearchName] = useState<string>("");
 	const [searchTopic, setSearchTopic] = useState<string>("");
 
@@ -76,9 +72,6 @@ const AllQuestionPage: React.FC = () => {
 		fetchData();
 	}, []);
 
-	// -------------------------------------
-	// Logic phân trang dựa vào questions (đã filter nếu có)
-	// -------------------------------------
 	const indexOfLastItem = currentPage * itemsPerPage;
 	const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 	const currentItems = questions.slice(indexOfFirstItem, indexOfLastItem);
