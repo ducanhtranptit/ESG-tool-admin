@@ -28,20 +28,22 @@ const AllAnswersPage: React.FC = () => {
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
+	const [searchInput, setSearchInput] = useState<string>(""); 
+	const [searchYearInput, setSearchYearInput] = useState<string>(""); 
 	const [searchQuery, setSearchQuery] = useState<string>("");
+	const [searchYear, setSearchYear] = useState<string>(""); 
 	const [totalPages, setTotalPages] = useState<number>(1);
 
-	// Fetch data from API
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
 				const response = await QuestionAPI.getAllAnswers(
 					currentPage,
-					itemsPerPage
-					// searchQuery
+					itemsPerPage,
+					searchQuery,
+					searchYear 
 				);
 				setAccounts(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
@@ -54,10 +56,12 @@ const AllAnswersPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchQuery]);
+	}, [currentPage, itemsPerPage, searchQuery, searchYear]); 
 
 	const handleSearch = () => {
-		setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+		setSearchQuery(searchInput); 
+		setSearchYear(searchYearInput); 
+		setCurrentPage(1); 
 	};
 
 	const handleItemsPerPageChange = (
@@ -127,7 +131,6 @@ const AllAnswersPage: React.FC = () => {
 		);
 	}
 
-	if (error) return <p className="text-danger">{error}</p>;
 
 	return (
 		<div className="content-wrapper">
@@ -153,26 +156,42 @@ const AllAnswersPage: React.FC = () => {
 				</Card.Header>
 				{isFilterOpen && (
 					<Card.Body>
-						<Row>
-							<Col md={3}>
+						<Row className="align-items-center row-spacing">
+							<Col md={4} className="col-spacing">
 								<Form.Group controlId="searchQuery">
-									<Form.Label>Search</Form.Label>
+									<Form.Label>
+										Search by Company Code
+									</Form.Label>
 									<Form.Control
-										type="text"
-										placeholder="Search by question name"
-										value={searchQuery}
+										type="search"
+										placeholder="Enter company code"
+										value={searchInput}
 										onChange={(e) =>
-											setSearchQuery(e.target.value)
+											setSearchInput(e.target.value)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchYear">
+									<Form.Label>Search by Year</Form.Label>
+									<Form.Control
+										type="search"
+										placeholder="Enter year"
+										value={searchYearInput}
+										onChange={(e) =>
+											setSearchYearInput(e.target.value)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
-								className="d-flex align-items-end justify-content-end"
+								md={2}
+								className="d-flex justify-content-end col-spacing"
 							>
 								<Button
 									variant="primary"
+									className="mt-4"
 									onClick={handleSearch}
 								>
 									Search

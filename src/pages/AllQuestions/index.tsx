@@ -32,23 +32,25 @@ interface Question {
 	answer10?: string;
 }
 
-interface Account {
-	userId: any;
-	username: string;
-	company: string;
-	status: string;
-}
-
 const AllQuestionPage: React.FC = () => {
+	// -------------------------------------
+	// Chỉnh sửa: Tạo thêm state 'allQuestions' để lưu toàn bộ dữ liệu
+	// -------------------------------------
+	const [allQuestions, setAllQuestions] = useState<Question[]>([]);
 	const [questions, setQuestions] = useState<Question[]>([]);
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(10);
-	const [accounts, setAccounts] = useState<Account[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// -------------------------------------
+	// Chỉnh sửa: Tạo 2 state riêng cho searchName và searchTopic
+	// -------------------------------------
+	const [searchName, setSearchName] = useState<string>("");
+	const [searchTopic, setSearchTopic] = useState<string>("");
+
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
 		null
@@ -59,6 +61,11 @@ const AllQuestionPage: React.FC = () => {
 			try {
 				setLoading(true);
 				const response = await QuestionAPI.getAllQuestions();
+
+				// -------------------------------------
+				// Chỉnh sửa: Lưu dữ liệu vào cả allQuestions và questions
+				// -------------------------------------
+				setAllQuestions(response.data || []);
 				setQuestions(response.data || []);
 				setLoading(false);
 			} catch (error) {
@@ -69,10 +76,12 @@ const AllQuestionPage: React.FC = () => {
 		fetchData();
 	}, []);
 
+	// -------------------------------------
+	// Logic phân trang dựa vào questions (đã filter nếu có)
+	// -------------------------------------
 	const indexOfLastItem = currentPage * itemsPerPage;
 	const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 	const currentItems = questions.slice(indexOfFirstItem, indexOfLastItem);
-
 	const totalPages = Math.ceil(questions.length / itemsPerPage);
 
 	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
@@ -136,13 +145,25 @@ const AllQuestionPage: React.FC = () => {
 		setCurrentPage(1);
 	};
 
+	// -------------------------------------
+	// Chỉnh sửa: hàm handleSearch filter ngay trên allQuestions
+	// -------------------------------------
 	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
+		const filtered = allQuestions.filter((q) => {
+			const nameMatch = q.name
+				.toLowerCase()
+				.includes(searchName.toLowerCase().trim());
+			const topicMatch = q.topicCode
+				.toLowerCase()
+				.includes(searchTopic.toLowerCase().trim());
+			return nameMatch && topicMatch;
+		});
+		setQuestions(filtered);
+		setCurrentPage(1);
 	};
 
 	const handleAddNew = () => {
-		console.log("Adding new user");
+		console.log("Adding new question");
 	};
 
 	const handleEdit = (question: Question) => {
@@ -210,33 +231,35 @@ const AllQuestionPage: React.FC = () => {
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
+								<Form.Group controlId="searchByName">
 									<Form.Label>Search by name</Form.Label>
 									<Form.Control
 										type="text"
 										placeholder="Search by name"
-										value={searchUsername}
+										value={searchName}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchName(e.target.value)
 										}
 									/>
 								</Form.Group>
 							</Col>
+
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
+								<Form.Group controlId="searchByTopic">
 									<Form.Label>
 										Search by topic code
 									</Form.Label>
 									<Form.Control
 										type="text"
 										placeholder="Search by topic code"
-										value={searchUsername}
+										value={searchTopic}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchTopic(e.target.value)
 										}
 									/>
 								</Form.Group>
 							</Col>
+
 							<Col
 								md={5}
 								className="d-flex justify-content-end col-spacing"
@@ -318,6 +341,7 @@ const AllQuestionPage: React.FC = () => {
 							</tbody>
 						</Table>
 					</div>
+
 					<div className="pagination-container">
 						<Pagination className="mb-0">
 							<Pagination.Prev
@@ -345,6 +369,7 @@ const AllQuestionPage: React.FC = () => {
 					</div>
 				</Card.Body>
 			</Card>
+
 			<EditQuestionModal
 				show={showEditModal}
 				onClose={() => setShowEditModal(false)}

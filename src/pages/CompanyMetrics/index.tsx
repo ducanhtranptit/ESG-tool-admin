@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
-import ExampleAPI from "../../api/example";
+import CompanyAPI from "../../api/company";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
@@ -12,21 +12,19 @@ import {
 	Col,
 	Pagination,
 } from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	data1?: any;
-	data2?: any;
-	data3?: any;
-	data4?: any;
-	data5?: any;
-	data6?: any;
-	data7?: any;
-	data8?: any;
+	metricId?: any;
+	criteriaName?: any;
+	companyCode?: any;
+	year?: any;
+	metric?: any;
 }
 
-const ExamplePage: React.FC = () => {
-	const [accounts, setAccounts] = useState<Data[]>([]);
+const DummiesPage: React.FC = () => {
+	const [dummies, setDummies] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
@@ -40,17 +38,18 @@ const ExamplePage: React.FC = () => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const response = await ExampleAPI.getData(
+				const response = await CompanyAPI.getAllCompanyMetric(
 					currentPage,
-					itemsPerPage,
-					statusFilter
+					itemsPerPage
+					// statusFilter
 				);
-
-				setAccounts(response.data || []);
-				setTotalPages(response.totalPages || 1);
+				console.log("response: ", response);
+				setDummies(response.data.data || []);
+				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
-				setError("Không thể lấy dữ liệu từ API");
+				console.log(error);
+				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
@@ -59,7 +58,7 @@ const ExamplePage: React.FC = () => {
 	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
 
 	const handleSearch = () => {
-		setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -141,11 +140,12 @@ const ExamplePage: React.FC = () => {
 
 	return (
 		<div className="content-wrapper">
+			<ToastContainer />
 			<section className="content-header">
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Tên trang</h1>
+							<h1>Company Metrics Management</h1>
 						</div>
 					</div>
 				</div>
@@ -213,20 +213,22 @@ const ExamplePage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
-								<th style={{ width: "20%" }}>#TH</th>
+								<th>Metric ID</th>
+								<th>Criteria Name</th>
+								<th>Company code</th>
+								<th>Year</th>
+								<th>Metric</th>
+								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							{accounts.map((data, index) => (
+							{dummies.map((data, index) => (
 								<tr key={index}>
-									<td>{data.data1}</td>
-									<td>{data.data2}</td>
-									<td>{data.data3}</td>
-									<td>{data.data4}</td>
+									<td>{data.metricId}</td>
+									<td>{data.criteriaName}</td>
+									<td>{data.companyCode}</td>
+									<td>{data.year}</td>
+									<td>{data.metric}</td>
 									<td>
 										<Button
 											variant="primary"
@@ -278,4 +280,4 @@ const ExamplePage: React.FC = () => {
 	);
 };
 
-export default ExamplePage;
+export default DummiesPage;
