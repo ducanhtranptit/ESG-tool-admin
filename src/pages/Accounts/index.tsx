@@ -71,21 +71,6 @@ const AccountPage: React.FC = () => {
 		setShowModal(true);
 	};
 
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
-
 	return (
 		<div className="content-wrapper">
 			<section className="content-header">
@@ -189,41 +174,62 @@ const AccountPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<Table className="table table-bordered">
-						<thead>
-							<tr>
-								<th>UserId</th>
-								<th>Username</th>
-								<th>Company Code</th>
-								<th>Status</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							{accounts.map((account, index) => (
-								<tr key={index}>
-									<td>{account.userId}</td>
-									<td>{account.username}</td>
-									<td>{account.company}</td>
-									<td>{account.status}</td>
-									<td>
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={() =>
-												handleEdit(
-													account.username,
-													account.company
-												)
-											}
-										>
-											<FaEdit /> Edit
-										</Button>
-									</td>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : accounts.length > 0 ? (
+						<Table className="table table-bordered">
+							<thead>
+								<tr>
+									<th>UserId</th>
+									<th>Username</th>
+									<th>Company Code</th>
+									<th>Status</th>
+									<th>Actions</th>
 								</tr>
-							))}
-						</tbody>
-					</Table>
+							</thead>
+							<tbody>
+								{accounts.map((account, index) => (
+									<tr key={index}>
+										<td>{account.userId}</td>
+										<td>{account.username}</td>
+										<td>{account.company}</td>
+										<td>{account.status}</td>
+										<td>
+											<Button
+												variant="primary"
+												size="sm"
+												onClick={() =>
+													handleEdit(
+														account.username,
+														account.company
+													)
+												}
+											>
+												<FaEdit /> Edit
+											</Button>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</Table>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
 				</Card.Body>
 			</Card>
 
