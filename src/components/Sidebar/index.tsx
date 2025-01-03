@@ -179,7 +179,7 @@ const SideBar: React.FC = () => {
 						>
 							<div>
 								<FaBuilding className="me-2" />
-								Companys
+								Companies
 							</div>
 							<FaChevronDown
 								className={`transition-transform ${

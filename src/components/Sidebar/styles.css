@@ -68,24 +68,22 @@
 	color: #ffffff;
 	padding: 8px 10px;
 	border-radius: 4px;
-	font-size: 17px;
+	font-size: 16px;
 	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .nav-link:hover {
-    color: #ffffff; 
+	color: #ffffff;
 	background-color: black;
 }
 
 .submenu .dropdown-item:hover {
-    color: #ffffff; 
+	color: #ffffff;
 }
 
 .nav-link .transition-transform {
-    margin-left: 4vw;
+	margin-left: 4vw;
 }
-
-
 
 .submenu .dropdown-item {
 	padding-left: 20px;
@@ -94,7 +92,6 @@
 	margin-bottom: 8px;
 	transition: color 0.3s ease;
 }
-
 
 .submenu {
 	max-width: 80%;
