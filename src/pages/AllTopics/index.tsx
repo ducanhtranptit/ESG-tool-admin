@@ -39,8 +39,8 @@ const TopicPage: React.FC = () => {
 			setLoading(true);
 			try {
 				const response = await TopicAPI.getAllTopics();
-				setTopics(response.data);
-				setFilteredTopics(response.data);
+				setTopics(response.data || []);
+				setFilteredTopics(response.data || []);
 				setLoading(false);
 			} catch (error) {
 				setError("Không thể lấy dữ liệu từ API");
@@ -147,21 +147,6 @@ const TopicPage: React.FC = () => {
 		return items;
 	};
 
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
-
 	return (
 		<div className="content-wrapper">
 			<section className="content-header">
@@ -238,8 +223,7 @@ const TopicPage: React.FC = () => {
 											setLanguageFilter(e.target.value)
 										}
 									>
-										<option value="">All</option>{" "}
-										{/* Thêm tùy chọn All */}
+										<option value="">All</option>
 										<option value="vi">Vietnamese</option>
 										<option value="en">English</option>
 									</Form.Select>
@@ -264,66 +248,90 @@ const TopicPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<div className="table-wrapper">
-						<Table className="table table-bordered">
-							<thead>
-								<tr>
-									<th>Topic Code</th>
-									<th>Language</th>
-									<th>Name</th>
-									<th>Answer Guide</th>
-									<th>#</th>
-								</tr>
-							</thead>
-							<tbody>
-								{getCurrentPageData().map((data, index) => (
-									<tr key={index}>
-										<td>{data.topicCode}</td>
-										<td>{data.language}</td>
-										<td>{data.name}</td>
-										<td>{data.answerGuide}</td>
-										<td>
-											<Button
-												variant="primary"
-												size="sm"
-												onClick={() =>
-													console.log("Edit")
-												}
-											>
-												<FaEdit /> Edit
-											</Button>
-										</td>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : filteredTopics.length > 0 ? (
+						<div className="table-wrapper">
+							<Table className="table table-bordered">
+								<thead>
+									<tr>
+										<th>Topic Code</th>
+										<th>Language</th>
+										<th>Name</th>
+										<th>Answer Guide</th>
+										<th>#</th>
 									</tr>
-								))}
-							</tbody>
-						</Table>
-					</div>
-				</Card.Body>
-				<div className="pagination-container">
-					<Pagination className="mb-0">
-						<Pagination.Prev
-							onClick={() => paginate(currentPage - 1)}
-							disabled={currentPage === 1}
-						/>
-						{renderPaginationItems()}
-						<Pagination.Next
-							onClick={() => paginate(currentPage + 1)}
-							disabled={currentPage === totalPages}
-						/>
-					</Pagination>
+								</thead>
+								<tbody>
+									{getCurrentPageData().map((data, index) => (
+										<tr key={index}>
+											<td>{data.topicCode}</td>
+											<td>{data.language}</td>
+											<td>{data.name}</td>
+											<td>{data.answerGuide}</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() =>
+														console.log("Edit")
+													}
+												>
+													<FaEdit /> Edit
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
 
-					<Form.Select
-						value={itemsPerPage}
-						onChange={handleItemsPerPageChange}
-						className="ms-3 items-per-page-select pagination-controls"
-						style={{ width: "130px" }}
-					>
-						<option value={10}>10 / page</option>
-						<option value={20}>20 / page</option>
-						<option value={50}>50 / page</option>
-						<option value={100}>100 / page</option>
-					</Form.Select>
-				</div>
+					{!loading && !error && filteredTopics.length > 0 && (
+						<div className="pagination-container">
+							<Pagination className="mb-0">
+								<Pagination.Prev
+									onClick={() => paginate(currentPage - 1)}
+									disabled={currentPage === 1}
+								/>
+								{renderPaginationItems()}
+								<Pagination.Next
+									onClick={() => paginate(currentPage + 1)}
+									disabled={currentPage === totalPages}
+								/>
+							</Pagination>
+
+							<Form.Select
+								value={itemsPerPage}
+								onChange={handleItemsPerPageChange}
+								className="ms-3 items-per-page-select pagination-controls"
+								style={{ width: "130px" }}
+							>
+								<option value={10}>10 / page</option>
+								<option value={20}>20 / page</option>
+								<option value={50}>50 / page</option>
+								<option value={100}>100 / page</option>
+							</Form.Select>
+						</div>
+					)}
+				</Card.Body>
 			</Card>
 		</div>
 	);

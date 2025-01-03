@@ -136,7 +136,6 @@ const AllQuestionPage: React.FC = () => {
 
 	const handleSearch = () => {
 		const filtered = allQuestions.filter((q) => {
-			console.log("q.type:", q.type, "Type of q.type:", typeof q.type); // Kiểm tra kiểu dữ liệu
 			const nameMatch = q.name
 				.toLowerCase()
 				.includes(searchName.toLowerCase().trim());
@@ -147,13 +146,9 @@ const AllQuestionPage: React.FC = () => {
 				.toLowerCase()
 				.includes(searchQuestionCode.toLowerCase().trim());
 
-			// Cách 1: So sánh sau khi chuyển q.type thành string
 			const typeMatch = searchType
 				? q.type.toString() === searchType
 				: true;
-
-			// Hoặc Cách 2: So sánh sau khi chuyển searchType thành number
-			// const typeMatch = searchType ? q.type === Number(searchType) : true;
 
 			const languageMatch = searchLanguage
 				? q.language === searchLanguage
@@ -167,7 +162,6 @@ const AllQuestionPage: React.FC = () => {
 				languageMatch
 			);
 		});
-		console.log("filtered: ", filtered);
 		setQuestions(filtered);
 		setCurrentPage(1);
 	};
@@ -184,22 +178,15 @@ const AllQuestionPage: React.FC = () => {
 	const handleSaveQuestion = (updatedQuestion: Question) => {
 		console.log("Updated Question:", updatedQuestion);
 		setShowEditModal(false);
-	};
-
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
+		// Cập nhật câu hỏi trong state
+		const updatedQuestions = allQuestions.map((q) =>
+			q.questionCode === updatedQuestion.questionCode
+				? updatedQuestion
+				: q
 		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
+		setAllQuestions(updatedQuestions);
+		setQuestions(updatedQuestions);
+	};
 
 	return (
 		<div className="content-wrapper">
@@ -249,10 +236,6 @@ const AllQuestionPage: React.FC = () => {
 										value={searchName}
 										onChange={(e) => {
 											setSearchName(e.target.value);
-											console.log(
-												"Search Name:",
-												e.target.value
-											);
 										}}
 									/>
 								</Form.Group>
@@ -269,10 +252,6 @@ const AllQuestionPage: React.FC = () => {
 										value={searchTopic}
 										onChange={(e) => {
 											setSearchTopic(e.target.value);
-											console.log(
-												"Search Topic:",
-												e.target.value
-											);
 										}}
 									/>
 								</Form.Group>
@@ -291,10 +270,6 @@ const AllQuestionPage: React.FC = () => {
 											setSearchQuestionCode(
 												e.target.value
 											);
-											console.log(
-												"Search Question Code:",
-												e.target.value
-											);
 										}}
 									/>
 								</Form.Group>
@@ -307,10 +282,6 @@ const AllQuestionPage: React.FC = () => {
 										value={searchType}
 										onChange={(e) => {
 											setSearchType(e.target.value);
-											console.log(
-												"Search Type:",
-												e.target.value
-											);
 										}}
 									>
 										<option value="">All</option>
@@ -328,10 +299,6 @@ const AllQuestionPage: React.FC = () => {
 										value={searchLanguage}
 										onChange={(e) => {
 											setSearchLanguage(e.target.value);
-											console.log(
-												"Search Language:",
-												e.target.value
-											);
 										}}
 									>
 										<option value="">All</option>
@@ -360,94 +327,119 @@ const AllQuestionPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm">
 				<Card.Body>
-					<div className="table-wrapper">
-						<Table className="table table-bordered">
-							<thead>
-								<tr>
-									<th className="sticky-col">
-										Question Code
-									</th>
-									<th className="sticky-col">Topic Code</th>
-									<th>Name</th>
-									<th>Language</th>
-									<th>Type</th>
-									<th>Answer 1</th>
-									<th>Answer 2</th>
-									<th>Answer 3</th>
-									<th>Answer 4</th>
-									<th>Answer 5</th>
-									<th>Answer 6</th>
-									<th>Answer 7</th>
-									<th>Answer 8</th>
-									<th>Answer 9</th>
-									<th>Answer 10</th>
-									<th>Actions</th>
-								</tr>
-							</thead>
-							<tbody>
-								{currentItems.map((question, index) => (
-									<tr key={index}>
-										<td className="sticky-col">
-											{question.questionCode}
-										</td>
-										<td className="sticky-col">
-											{question.topicCode}
-										</td>
-										<td>{question.name}</td>
-										<td>{question.language}</td>
-										<td>{question.type}</td>
-										<td>{question.answer1}</td>
-										<td>{question.answer2}</td>
-										<td>{question.answer3}</td>
-										<td>{question.answer4}</td>
-										<td>{question.answer5}</td>
-										<td>{question.answer6}</td>
-										<td>{question.answer7}</td>
-										<td>{question.answer8}</td>
-										<td>{question.answer9}</td>
-										<td>{question.answer10}</td>
-										<td>
-											<Button
-												variant="primary"
-												size="sm"
-												onClick={() =>
-													handleEdit(question)
-												}
-											>
-												<FaEdit /> Sửa
-											</Button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</Table>
-					</div>
-
-					<div className="pagination-container">
-						<Pagination className="mb-0">
-							<Pagination.Prev
-								onClick={() => paginate(currentPage - 1)}
-								disabled={currentPage === 1}
-							/>
-							{renderPaginationItems()}
-							<Pagination.Next
-								onClick={() => paginate(currentPage + 1)}
-								disabled={currentPage === totalPages}
-							/>
-						</Pagination>
-
-						<Form.Select
-							value={itemsPerPage}
-							onChange={handleItemsPerPageChange}
-							className="ms-3 items-per-page-select pagination-controls"
-							style={{ width: "130px" }}
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
 						>
-							<option value={10}>10 / page</option>
-							<option value={20}>20 / page</option>
-							<option value={50}>50 / page</option>
-							<option value={100}>100 / page</option>
-						</Form.Select>
-					</div>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : questions.length > 0 ? (
+						<div className="table-wrapper">
+							<Table className="table table-bordered">
+								<thead>
+									<tr>
+										<th className="sticky-col">
+											Question Code
+										</th>
+										<th className="sticky-col">
+											Topic Code
+										</th>
+										<th>Name</th>
+										<th>Language</th>
+										<th>Type</th>
+										<th>Answer 1</th>
+										<th>Answer 2</th>
+										<th>Answer 3</th>
+										<th>Answer 4</th>
+										<th>Answer 5</th>
+										<th>Answer 6</th>
+										<th>Answer 7</th>
+										<th>Answer 8</th>
+										<th>Answer 9</th>
+										<th>Answer 10</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{currentItems.map((question, index) => (
+										<tr key={index}>
+											<td className="sticky-col">
+												{question.questionCode}
+											</td>
+											<td className="sticky-col">
+												{question.topicCode}
+											</td>
+											<td>{question.name}</td>
+											<td>{question.language}</td>
+											<td>{question.type}</td>
+											<td>{question.answer1}</td>
+											<td>{question.answer2}</td>
+											<td>{question.answer3}</td>
+											<td>{question.answer4}</td>
+											<td>{question.answer5}</td>
+											<td>{question.answer6}</td>
+											<td>{question.answer7}</td>
+											<td>{question.answer8}</td>
+											<td>{question.answer9}</td>
+											<td>{question.answer10}</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() =>
+														handleEdit(question)
+													}
+												>
+													<FaEdit /> Sửa
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
+
+					{!loading && !error && questions.length > 0 && (
+						<div className="pagination-container">
+							<Pagination className="mb-0">
+								<Pagination.Prev
+									onClick={() => paginate(currentPage - 1)}
+									disabled={currentPage === 1}
+								/>
+								{renderPaginationItems()}
+								<Pagination.Next
+									onClick={() => paginate(currentPage + 1)}
+									disabled={currentPage === totalPages}
+								/>
+							</Pagination>
+
+							<Form.Select
+								value={itemsPerPage}
+								onChange={handleItemsPerPageChange}
+								className="ms-3 items-per-page-select pagination-controls"
+								style={{ width: "130px" }}
+							>
+								<option value={10}>10 / page</option>
+								<option value={20}>20 / page</option>
+								<option value={50}>50 / page</option>
+								<option value={100}>100 / page</option>
+							</Form.Select>
+						</div>
+					)}
 				</Card.Body>
 			</Card>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { FaChevronDown, FaChevronUp, FaEdit } from "react-icons/fa";
 import CompanyAPI from "../../api/company";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
 	Table,
@@ -44,6 +44,7 @@ const IndustriesPage: React.FC = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
+			setError(null); // Reset lỗi trước khi fetch dữ liệu
 			try {
 				const response = await CompanyAPI.getAllIndustries(
 					currentPage,
@@ -58,6 +59,7 @@ const IndustriesPage: React.FC = () => {
 				setLoading(false);
 			} catch (error) {
 				console.log(error);
+				setError("Không thể lấy dữ liệu từ API");
 				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
@@ -73,10 +75,10 @@ const IndustriesPage: React.FC = () => {
 	]);
 
 	const handleSearch = () => {
-		setCurrentPage(1);
 		setSearchLevel1(searchLevel1Input.trim());
 		setSearchLevel2(searchLevel2Input.trim());
 		setSearchIndustryName(searchIndustryNameInput.trim());
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -91,7 +93,11 @@ const IndustriesPage: React.FC = () => {
 
 		if (currentPage > 3) {
 			items.push(
-				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+				<Pagination.Item
+					key={1}
+					active={1 === currentPage}
+					onClick={() => setCurrentPage(1)}
+				>
 					1
 				</Pagination.Item>
 			);
@@ -123,6 +129,7 @@ const IndustriesPage: React.FC = () => {
 			items.push(
 				<Pagination.Item
 					key={totalPages}
+					active={totalPages === currentPage}
 					onClick={() => setCurrentPage(totalPages)}
 				>
 					{totalPages}
@@ -133,28 +140,17 @@ const IndustriesPage: React.FC = () => {
 		return items;
 	};
 
-	const handleEdit = () => {
-		console.log("Editing item");
+	const handleEdit = (industry: Data) => {
+		// Xử lý chỉnh sửa ngành công nghiệp tại đây
+		console.log("Editing industry: ", industry);
+		// Ví dụ: mở modal chỉnh sửa hoặc chuyển hướng trang chỉnh sửa
 	};
 
 	const handleAddNew = () => {
+		// Xử lý thêm mới ngành công nghiệp tại đây
 		console.log("Adding new industry");
+		// Ví dụ: mở modal thêm mới hoặc chuyển hướng trang thêm mới
 	};
-
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
 
 	return (
 		<div className="content-wrapper">
@@ -180,7 +176,7 @@ const IndustriesPage: React.FC = () => {
 				</Button>
 			</div>
 
-			<Card className="shadow-sm card-filter">
+			<Card className="shadow-sm card-filter mb-4">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
 					onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -242,7 +238,7 @@ const IndustriesPage: React.FC = () => {
 								</Form.Group>
 							</Col>
 							<Col
-								md={11}
+								md={3}
 								className="d-flex justify-content-end align-items-end col-spacing"
 							>
 								<Button
@@ -260,57 +256,96 @@ const IndustriesPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<Table className="table table-bordered">
-						<thead>
-							<tr>
-								<th>Level-1 Industry Code</th>
-								<th>Level-2 Industry Code</th>
-								<th>Industry Name</th>
-							</tr>
-						</thead>
-						<tbody>
-							{industries.map((data, index) => (
-								<tr key={index}>
-									<td>{data.level1}</td>
-									<td>{data.level2}</td>
-									<td>{data.industryName}</td>
-								</tr>
-							))}
-						</tbody>
-					</Table>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : industries.length > 0 ? (
+						<div className="table-wrapper">
+							<Table className="table table-bordered">
+								<thead>
+									<tr>
+										<th>Level-1 Industry Code</th>
+										<th>Level-2 Industry Code</th>
+										<th>Industry Name</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{industries.map((data, index) => (
+										<tr key={index}>
+											<td>{data.level1}</td>
+											<td>{data.level2}</td>
+											<td>{data.industryName}</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() =>
+														handleEdit(data)
+													}
+												>
+													<FaEdit /> Sửa
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
+
+					{!loading && !error && industries.length > 0 && (
+						<div className="pagination-container">
+							<Pagination className="mb-0">
+								<Pagination.Prev
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.max(prev - 1, 1)
+										)
+									}
+									disabled={currentPage === 1}
+								/>
+								{renderPaginationItems()}
+								<Pagination.Next
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.min(prev + 1, totalPages)
+										)
+									}
+									disabled={currentPage === totalPages}
+								/>
+							</Pagination>
+
+							<Form.Select
+								value={itemsPerPage}
+								onChange={handleItemsPerPageChange}
+								className="ms-3 items-per-page-select"
+								style={{ width: "130px" }}
+							>
+								<option value={10}>10 / page</option>
+								<option value={20}>20 / page</option>
+								<option value={50}>50 / page</option>
+								<option value={100}>100 / page</option>
+							</Form.Select>
+						</div>
+					)}
 				</Card.Body>
-
-				<div className="pagination-container">
-					<Pagination className="mb-0">
-						<Pagination.Prev
-							onClick={() =>
-								setCurrentPage((prev) => Math.max(prev - 1, 1))
-							}
-							disabled={currentPage === 1}
-						/>
-						{renderPaginationItems()}
-						<Pagination.Next
-							onClick={() =>
-								setCurrentPage((prev) =>
-									Math.min(prev + 1, totalPages)
-								)
-							}
-							disabled={currentPage === totalPages}
-						/>
-					</Pagination>
-
-					<Form.Select
-						value={itemsPerPage}
-						onChange={handleItemsPerPageChange}
-						className="ms-3 items-per-page-select"
-						style={{ width: "130px" }}
-					>
-						<option value={10}>10 / page</option>
-						<option value={20}>20 / page</option>
-						<option value={50}>50 / page</option>
-						<option value={100}>100 / page</option>
-					</Form.Select>
-				</div>
 			</Card>
 		</div>
 	);

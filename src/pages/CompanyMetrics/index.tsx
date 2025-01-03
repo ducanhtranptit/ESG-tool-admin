@@ -48,6 +48,7 @@ const CompanyMetricPage: React.FC = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
+			setError(null); // Reset lỗi trước khi fetch dữ liệu
 			try {
 				const response = await CompanyAPI.getAllCompanyMetric(
 					currentPage,
@@ -62,6 +63,7 @@ const CompanyMetricPage: React.FC = () => {
 				setLoading(false);
 			} catch (error) {
 				console.log(error);
+				setError("Không thể lấy dữ liệu từ API");
 				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
@@ -77,10 +79,10 @@ const CompanyMetricPage: React.FC = () => {
 	]);
 
 	const handleSearch = () => {
-		setCurrentPage(1);
 		setSearchCriteriaName(searchCriteriaNameInput.trim());
 		setSearchCompanyCode(searchCompanyCodeInput.trim());
 		setSearchYear(searchYearInput.trim());
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -95,7 +97,11 @@ const CompanyMetricPage: React.FC = () => {
 
 		if (currentPage > 3) {
 			items.push(
-				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+				<Pagination.Item
+					key={1}
+					active={1 === currentPage}
+					onClick={() => setCurrentPage(1)}
+				>
 					1
 				</Pagination.Item>
 			);
@@ -127,6 +133,7 @@ const CompanyMetricPage: React.FC = () => {
 			items.push(
 				<Pagination.Item
 					key={totalPages}
+					active={totalPages === currentPage}
 					onClick={() => setCurrentPage(totalPages)}
 				>
 					{totalPages}
@@ -137,30 +144,17 @@ const CompanyMetricPage: React.FC = () => {
 		return items;
 	};
 
-	const handleEdit = (metricId: string) => {
-		console.log("Editing item with Metric ID:", metricId);
-		// Bạn có thể thêm logic để điều hướng đến trang chỉnh sửa hoặc mở modal chỉnh sửa tại đây
+	const handleEdit = (metric: Data) => {
+		// Xử lý chỉnh sửa metric tại đây
+		console.log("Editing metric: ", metric);
+		// Ví dụ: mở modal chỉnh sửa hoặc chuyển hướng trang chỉnh sửa
 	};
 
 	const handleAddNew = () => {
+		// Xử lý thêm mới metric tại đây
 		console.log("Adding new company metric");
-		// Bạn có thể thêm logic để điều hướng đến trang thêm mới hoặc mở modal thêm mới tại đây
+		// Ví dụ: mở modal thêm mới hoặc chuyển hướng trang thêm mới
 	};
-
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
 
 	return (
 		<div className="content-wrapper">
@@ -186,7 +180,7 @@ const CompanyMetricPage: React.FC = () => {
 				</Button>
 			</div>
 
-			<Card className="shadow-sm card-filter">
+			<Card className="shadow-sm card-filter mb-4">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
 					onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -246,12 +240,12 @@ const CompanyMetricPage: React.FC = () => {
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
-								className="d-flex justify-content-end col-spacing"
+								md={12}
+								className="d-flex justify-content-end align-items-end col-spacing"
 							>
 								<Button
 									variant="primary"
-									className="mt-4"
+									className="mt-3"
 									onClick={handleSearch}
 								>
 									Search
@@ -264,75 +258,102 @@ const CompanyMetricPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<Table className="table table-bordered">
-						<thead>
-							<tr>
-								<th>Metric ID</th>
-								<th>Criteria Name</th>
-								<th>Company Code</th>
-								<th>Year</th>
-								<th>Metric</th>
-								<th>Rank</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							{companyMetrics.map((data, index) => (
-								<tr key={index}>
-									<td>{data.metricId}</td>
-									<td>{data.criteriaName}</td>
-									<td>{data.companyCode}</td>
-									<td>{data.year}</td>
-									<td>{data.metric}</td>
-									<td>{data.rank}</td>
-									<td>
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={() =>
-												handleEdit(data.metricId || "")
-											}
-										>
-											<FaEdit /> Sửa
-										</Button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</Table>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : companyMetrics.length > 0 ? (
+						<div className="table-wrapper">
+							<Table className="table table-bordered">
+								<thead>
+									<tr>
+										<th>Metric ID</th>
+										<th>Criteria Name</th>
+										<th>Company Code</th>
+										<th>Year</th>
+										<th>Metric</th>
+										<th>Rank</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{companyMetrics.map((data, index) => (
+										<tr key={index}>
+											<td>{data.metricId}</td>
+											<td>{data.criteriaName}</td>
+											<td>{data.companyCode}</td>
+											<td>{data.year}</td>
+											<td>{data.metric}</td>
+											<td>{data.rank}</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() =>
+														handleEdit(data)
+													}
+												>
+													<FaEdit /> Sửa
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
+
+					{!loading && !error && companyMetrics.length > 0 && (
+						<div className="pagination-container">
+							<Pagination className="mb-0">
+								<Pagination.Prev
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.max(prev - 1, 1)
+										)
+									}
+									disabled={currentPage === 1}
+								/>
+								{renderPaginationItems()}
+								<Pagination.Next
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.min(prev + 1, totalPages)
+										)
+									}
+									disabled={currentPage === totalPages}
+								/>
+							</Pagination>
+
+							<Form.Select
+								value={itemsPerPage}
+								onChange={handleItemsPerPageChange}
+								className="ms-3 items-per-page-select"
+								style={{ width: "130px" }}
+							>
+								<option value={10}>10 / page</option>
+								<option value={20}>20 / page</option>
+								<option value={50}>50 / page</option>
+								<option value={100}>100 / page</option>
+							</Form.Select>
+						</div>
+					)}
 				</Card.Body>
-
-				<div className="pagination-container">
-					<Pagination className="mb-0">
-						<Pagination.Prev
-							onClick={() =>
-								setCurrentPage((prev) => Math.max(prev - 1, 1))
-							}
-							disabled={currentPage === 1}
-						/>
-						{renderPaginationItems()}
-						<Pagination.Next
-							onClick={() =>
-								setCurrentPage((prev) =>
-									Math.min(prev + 1, totalPages)
-								)
-							}
-							disabled={currentPage === totalPages}
-						/>
-					</Pagination>
-
-					<Form.Select
-						value={itemsPerPage}
-						onChange={handleItemsPerPageChange}
-						className="ms-3 items-per-page-select"
-						style={{ width: "130px" }}
-					>
-						<option value={10}>10 / page</option>
-						<option value={20}>20 / page</option>
-						<option value={50}>50 / page</option>
-						<option value={100}>100 / page</option>
-					</Form.Select>
-				</div>
 			</Card>
 		</div>
 	);

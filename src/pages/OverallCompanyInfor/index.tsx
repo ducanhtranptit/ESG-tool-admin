@@ -36,7 +36,7 @@ interface InforData {
 	productInfors: ProductInfor[];
 }
 
-const AccountPage: React.FC = () => {
+const OverralInfor: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
@@ -49,8 +49,8 @@ const AccountPage: React.FC = () => {
 	const [filteredData, setFilteredData] = useState<InforData[]>([]);
 
 	useEffect(() => {
-		setLoading(true);
 		const fetchData = async () => {
+			setLoading(true);
 			try {
 				const response = await UserAPI.getAllOverallInfors();
 				setData(response.data || []);
@@ -58,6 +58,7 @@ const AccountPage: React.FC = () => {
 				setLoading(false);
 			} catch (error) {
 				console.error("Lỗi khi lấy dữ liệu:", error);
+				setError("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
 		};
@@ -89,21 +90,6 @@ const AccountPage: React.FC = () => {
 	const handleEdit = () => {
 		console.log("Editing user");
 	};
-
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
 
 	return (
 		<div className="content-wrapper">
@@ -191,180 +177,221 @@ const AccountPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<div className="table-ovrall-info table-wrapper">
-						<Table className="table table-bordered">
-							<thead className="table">
-								<tr>
-									<th>User ID</th>
-									<th>Company Name</th>
-									<th>Date Founded</th>
-									<th>Main Address</th>
-									<th>Main Phone Number</th>
-									<th>Company Website</th>
-									<th>Company Sector</th>
-									<th>Company Description</th>
-									<th>Contact Information</th>
-									<th className="wide-column">Site Infors</th>
-									<th className="wide-column">
-										Product Infors
-									</th>
-									<th>Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								{filteredData.map((item, index) => (
-									<tr key={index}>
-										<td>{item.overallInfor.userId}</td>
-										<td>{item.overallInfor.companyName}</td>
-										<td>{item.overallInfor.dateFounder}</td>
-										<td>{item.overallInfor.mainAddress}</td>
-										<td>
-											{item.overallInfor.mainPhoneNumber}
-										</td>
-										<td>
-											<a
-												href={
-													item.overallInfor
-														.companyWebsite
-												}
-												target="_blank"
-												rel="noopener noreferrer"
-											>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : filteredData.length > 0 ? (
+						<div className="table-ovrall-info table-wrapper">
+							<Table className="table table-bordered">
+								<thead className="table">
+									<tr>
+										<th>User ID</th>
+										<th>Company Name</th>
+										<th>Date Founded</th>
+										<th>Main Address</th>
+										<th>Main Phone Number</th>
+										<th>Company Website</th>
+										<th>Company Sector</th>
+										<th>Company Description</th>
+										<th>Contact Information</th>
+										<th className="wide-column">
+											Site Infors
+										</th>
+										<th className="wide-column">
+											Product Infors
+										</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{filteredData.map((item, index) => (
+										<tr key={index}>
+											<td>{item.overallInfor.userId}</td>
+											<td>
+												{item.overallInfor.companyName}
+											</td>
+											<td>
+												{item.overallInfor.dateFounder}
+											</td>
+											<td>
+												{item.overallInfor.mainAddress}
+											</td>
+											<td>
 												{
 													item.overallInfor
-														.companyWebsite
+														.mainPhoneNumber
 												}
-											</a>
-										</td>
-										<td>
-											{item.overallInfor.companySector}
-										</td>
-										<td>
-											{
-												item.overallInfor
-													.companyDescription
-											}
-										</td>
-										<td
-											dangerouslySetInnerHTML={{
-												__html: item.overallInfor
-													.contactInformation,
-											}}
-										/>
+											</td>
+											<td>
+												<a
+													href={
+														item.overallInfor
+															.companyWebsite
+													}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													{
+														item.overallInfor
+															.companyWebsite
+													}
+												</a>
+											</td>
+											<td>
+												{
+													item.overallInfor
+														.companySector
+												}
+											</td>
+											<td>
+												{
+													item.overallInfor
+														.companyDescription
+												}
+											</td>
+											<td
+												dangerouslySetInnerHTML={{
+													__html: item.overallInfor
+														.contactInformation,
+												}}
+											/>
 
-										<td className="position-relative wide-column">
-											<div className="table-site-info">
-												<Table className="table table-bordered">
-													<thead>
-														<tr>
-															<th>Site ID</th>
-															<th>Site Name</th>
-															<th>Employees</th>
-															<th>Comment</th>
-														</tr>
-													</thead>
-													<tbody>
-														{item.siteInfors.map(
-															(site) => (
-																<tr
-																	key={
-																		site.id
-																	}
-																>
-																	<td>
-																		{
+											<td className="position-relative wide-column">
+												<div className="table-site-info">
+													<Table className="table table-bordered">
+														<thead>
+															<tr>
+																<th>Site ID</th>
+																<th>
+																	Site Name
+																</th>
+																<th>
+																	Employees
+																</th>
+																<th>Comment</th>
+															</tr>
+														</thead>
+														<tbody>
+															{item.siteInfors.map(
+																(site) => (
+																	<tr
+																		key={
 																			site.id
 																		}
-																	</td>
-																	<td>
-																		{
-																			site.siteName
-																		}
-																	</td>
-																	<td>
-																		{
-																			site.numberEmployees
-																		}
-																	</td>
-																	<td>
-																		{
-																			site.comment
-																		}
-																	</td>
-																</tr>
-															)
-														)}
-													</tbody>
-												</Table>
-											</div>
-										</td>
+																	>
+																		<td>
+																			{
+																				site.id
+																			}
+																		</td>
+																		<td>
+																			{
+																				site.siteName
+																			}
+																		</td>
+																		<td>
+																			{
+																				site.numberEmployees
+																			}
+																		</td>
+																		<td>
+																			{
+																				site.comment
+																			}
+																		</td>
+																	</tr>
+																)
+															)}
+														</tbody>
+													</Table>
+												</div>
+											</td>
 
-										<td className="position-relative wide-column">
-											<div className="table-product-info">
-												<Table className="table table-bordered">
-													<thead>
-														<tr>
-															<th>Product ID</th>
-															<th>
-																Product Name
-															</th>
-															<th>Revenue</th>
-															<th>Comment</th>
-														</tr>
-													</thead>
-													<tbody>
-														{item.productInfors.map(
-															(product) => (
-																<tr
-																	key={
-																		product.id
-																	}
-																>
-																	<td>
-																		{
+											<td className="position-relative wide-column">
+												<div className="table-product-info">
+													<Table className="table table-bordered">
+														<thead>
+															<tr>
+																<th>
+																	Product ID
+																</th>
+																<th>
+																	Product Name
+																</th>
+																<th>Revenue</th>
+																<th>Comment</th>
+															</tr>
+														</thead>
+														<tbody>
+															{item.productInfors.map(
+																(product) => (
+																	<tr
+																		key={
 																			product.id
 																		}
-																	</td>
-																	<td>
-																		{
-																			product.productName
-																		}
-																	</td>
-																	<td>
-																		{
-																			product.revenue
-																		}
-																	</td>
-																	<td>
-																		{
-																			product.comment
-																		}
-																	</td>
-																</tr>
-															)
-														)}
-													</tbody>
-												</Table>
-											</div>
-										</td>
-										<td>
-											<Button
-												variant="primary"
-												size="sm"
-												onClick={() => handleEdit()}
-											>
-												<FaEdit /> Edit
-											</Button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</Table>
-					</div>
+																	>
+																		<td>
+																			{
+																				product.id
+																			}
+																		</td>
+																		<td>
+																			{
+																				product.productName
+																			}
+																		</td>
+																		<td>
+																			{
+																				product.revenue
+																			}
+																		</td>
+																		<td>
+																			{
+																				product.comment
+																			}
+																		</td>
+																	</tr>
+																)
+															)}
+														</tbody>
+													</Table>
+												</div>
+											</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() => handleEdit()}
+												>
+													<FaEdit /> Edit
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
 				</Card.Body>
 			</Card>
 		</div>
 	);
 };
 
-export default AccountPage;
+export default OverralInfor;

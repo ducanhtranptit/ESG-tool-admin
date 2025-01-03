@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import QuestionAPI from "../../api/question";
 import {
 	Spinner,
 	Table,
@@ -11,6 +10,7 @@ import {
 	Col,
 	Pagination,
 } from "react-bootstrap";
+import QuestionAPI from "../../api/question";
 import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
@@ -57,6 +57,7 @@ const DummiesPage: React.FC = () => {
 				setLoading(false);
 			} catch (error) {
 				console.log(error);
+				setError("Không thể lấy dữ liệu từ API");
 				toast.error("Không thể lấy dữ liệu từ API");
 				setLoading(false);
 			}
@@ -66,9 +67,9 @@ const DummiesPage: React.FC = () => {
 	}, [currentPage, itemsPerPage, searchQuestionCode, searchQuestionName]);
 
 	const handleSearch = () => {
-		setCurrentPage(1);
 		setSearchQuestionCode(searchQuestionCodeInput.trim());
 		setSearchQuestionName(searchQuestionNameInput.trim());
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -83,7 +84,11 @@ const DummiesPage: React.FC = () => {
 
 		if (currentPage > 3) {
 			items.push(
-				<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>
+				<Pagination.Item
+					key={1}
+					active={1 === currentPage}
+					onClick={() => setCurrentPage(1)}
+				>
 					1
 				</Pagination.Item>
 			);
@@ -115,6 +120,7 @@ const DummiesPage: React.FC = () => {
 			items.push(
 				<Pagination.Item
 					key={totalPages}
+					active={totalPages === currentPage}
 					onClick={() => setCurrentPage(totalPages)}
 				>
 					{totalPages}
@@ -130,23 +136,8 @@ const DummiesPage: React.FC = () => {
 	};
 
 	const handleAddNew = () => {
-		console.log("Adding new user");
+		console.log("Adding new dummy");
 	};
-
-	if (loading) {
-		return (
-			<div
-				className="d-flex justify-content-center align-items-center"
-				style={{ height: "80vh" }}
-			>
-				<Spinner animation="border" role="status" variant="primary">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</div>
-		);
-	}
-
-	if (error) return <p className="text-danger">{error}</p>;
 
 	return (
 		<div className="content-wrapper">
@@ -237,69 +228,96 @@ const DummiesPage: React.FC = () => {
 
 			<Card className="mb-4 shadow-sm card-table">
 				<Card.Body>
-					<Table className="table table-bordered">
-						<thead>
-							<tr>
-								<th>Question Code</th>
-								<th>Question Name</th>
-								<th>Answer</th>
-								<th>Dummy</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							{dummies.map((data, index) => (
-								<tr key={index}>
-									<td>{data.questionCode}</td>
-									<td>{data.questionName}</td>
-									<td>{data.answer}</td>
-									<td>{data.dummy}</td>
-									<td>
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={() => handleEdit()}
-										>
-											<FaEdit /> Sửa
-										</Button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</Table>
+					{loading ? (
+						<div
+							className="d-flex justify-content-center align-items-center"
+							style={{ height: "200px" }}
+						>
+							<Spinner
+								animation="border"
+								role="status"
+								variant="primary"
+							>
+								<span className="visually-hidden">
+									Loading...
+								</span>
+							</Spinner>
+						</div>
+					) : error ? (
+						<p className="text-danger">{error}</p>
+					) : dummies.length > 0 ? (
+						<div className="table-wrapper">
+							<Table className="table table-bordered">
+								<thead>
+									<tr>
+										<th>Question Code</th>
+										<th>Question Name</th>
+										<th>Answer</th>
+										<th>Dummy</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{dummies.map((data, index) => (
+										<tr key={index}>
+											<td>{data.questionCode}</td>
+											<td>{data.questionName}</td>
+											<td>{data.answer}</td>
+											<td>{data.dummy}</td>
+											<td>
+												<Button
+													variant="primary"
+													size="sm"
+													onClick={() => handleEdit()}
+												>
+													<FaEdit /> Sửa
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</Table>
+						</div>
+					) : (
+						<p>Không có dữ liệu để hiển thị.</p>
+					)}
+
+					{!loading && !error && dummies.length > 0 && (
+						<div className="pagination-container">
+							<Pagination className="mb-0">
+								<Pagination.Prev
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.max(prev - 1, 1)
+										)
+									}
+									disabled={currentPage === 1}
+								/>
+								{renderPaginationItems()}
+								<Pagination.Next
+									onClick={() =>
+										setCurrentPage((prev) =>
+											Math.min(prev + 1, totalPages)
+										)
+									}
+									disabled={currentPage === totalPages}
+								/>
+							</Pagination>
+
+							<Form.Select
+								value={itemsPerPage}
+								onChange={handleItemsPerPageChange}
+								className="ms-3 items-per-page-select"
+								style={{ width: "130px" }}
+							>
+								<option value={10}>10 / page</option>
+								<option value={20}>20 / page</option>
+								<option value={50}>50 / page</option>
+								<option value={100}>100 / page</option>
+							</Form.Select>
+						</div>
+					)}
 				</Card.Body>
-
-				<div className="pagination-container">
-					<Pagination className="mb-0">
-						<Pagination.Prev
-							onClick={() =>
-								setCurrentPage((prev) => Math.max(prev - 1, 1))
-							}
-							disabled={currentPage === 1}
-						/>
-						{renderPaginationItems()}
-						<Pagination.Next
-							onClick={() =>
-								setCurrentPage((prev) =>
-									Math.min(prev + 1, totalPages)
-								)
-							}
-							disabled={currentPage === totalPages}
-						/>
-					</Pagination>
-
-					<Form.Select
-						value={itemsPerPage}
-						onChange={handleItemsPerPageChange}
-						className="ms-3 items-per-page-select"
-						style={{ width: "130px" }}
-					>
-						<option value={10}>10 / page</option>
-						<option value={20}>20 / page</option>
-						<option value={50}>50 / page</option>
-						<option value={100}>100 / page</option>
-					</Form.Select>
-				</div>
 			</Card>
 		</div>
 	);
