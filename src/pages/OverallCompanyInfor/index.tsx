@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import UserAPI from "../../api/user";
 import { Spinner, Table, Button, Card, Form, Row, Col } from "react-bootstrap";
 import "./styles.css";
@@ -40,13 +39,14 @@ interface InforData {
 const AccountPage: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
-	const [showModal, setShowModal] = useState<boolean>(false);
-	const [currentCompanyCode, setCurrentCompanyCode] = useState<string>("");
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// States for search filters
+	const [searchUserId, setSearchUserId] = useState<string>("");
+	const [searchCompanyName, setSearchCompanyName] = useState<string>("");
 
 	const [data, setData] = useState<InforData[]>([]);
+	const [filteredData, setFilteredData] = useState<InforData[]>([]);
 
 	useEffect(() => {
 		setLoading(true);
@@ -54,6 +54,7 @@ const AccountPage: React.FC = () => {
 			try {
 				const response = await UserAPI.getAllOverallInfors();
 				setData(response.data || []);
+				setFilteredData(response.data || []);
 				setLoading(false);
 			} catch (error) {
 				console.error("Lỗi khi lấy dữ liệu:", error);
@@ -64,13 +65,27 @@ const AccountPage: React.FC = () => {
 	}, []);
 
 	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
+		const filtered = data.filter((item) => {
+			const userIdMatch = searchUserId
+				? item.overallInfor.userId
+						.toString()
+						.includes(searchUserId.trim())
+				: true;
+			const companyNameMatch = searchCompanyName
+				? item.overallInfor.companyName
+						.toLowerCase()
+						.includes(searchCompanyName.toLowerCase().trim())
+				: true;
+
+			return userIdMatch && companyNameMatch;
+		});
+		setFilteredData(filtered);
 	};
 
 	const handleAddNew = () => {
 		console.log("Adding new user");
 	};
+
 	const handleEdit = () => {
 		console.log("Editing user");
 	};
@@ -129,32 +144,30 @@ const AccountPage: React.FC = () => {
 				{isFilterOpen && (
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
-							<Col md={2} className="col-spacing">
-								<Form.Group controlId="filterStatus">
-									<Form.Label>Status</Form.Label>
-									<Form.Select
-										value={statusFilter}
-										onChange={(e) =>
-											setStatusFilter(e.target.value)
-										}
-									>
-										<option value="">ALL</option>
-										<option value="Active">ACTIVE</option>
-										<option value="Inactive">
-											INACTIVE
-										</option>
-									</Form.Select>
-								</Form.Group>
-							</Col>
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+								<Form.Group controlId="searchUserId">
+									<Form.Label>Search by User ID</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name, username, email"
-										value={searchUsername}
+										placeholder="Enter User ID"
+										value={searchUserId}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchUserId(e.target.value)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchCompanyName">
+									<Form.Label>
+										Search by Company Name
+									</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="Enter Company Name"
+										value={searchCompanyName}
+										onChange={(e) =>
+											setSearchCompanyName(e.target.value)
 										}
 									/>
 								</Form.Group>
@@ -199,7 +212,7 @@ const AccountPage: React.FC = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{data.map((item, index) => (
+								{filteredData.map((item, index) => (
 									<tr key={index}>
 										<td>{item.overallInfor.userId}</td>
 										<td>{item.overallInfor.companyName}</td>
@@ -239,7 +252,6 @@ const AccountPage: React.FC = () => {
 											}}
 										/>
 
-										{/* Cột Site Infors */}
 										<td className="position-relative wide-column">
 											<div className="table-site-info">
 												<Table className="table table-bordered">
@@ -287,7 +299,6 @@ const AccountPage: React.FC = () => {
 											</div>
 										</td>
 
-										{/* Cột Product Infors */}
 										<td className="position-relative wide-column">
 											<div className="table-product-info">
 												<Table className="table table-bordered">
@@ -342,7 +353,7 @@ const AccountPage: React.FC = () => {
 												size="sm"
 												onClick={() => handleEdit()}
 											>
-												<FaEdit /> Sửa
+												<FaEdit /> Edit
 											</Button>
 										</td>
 									</tr>

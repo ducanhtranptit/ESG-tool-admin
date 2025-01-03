@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import QuestionAPI from "../../api/question";
+import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import CompanyAPI from "../../api/company";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
 	Table,
@@ -17,19 +15,32 @@ import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	companyCode?: any;
-	companyName?: any;
-	industryId?: any;
-	industryCodeLevel2?: any;
+	companyCode?: string;
+	companyName?: string;
+	industryId?: string;
+	industryCodeLevel2?: string;
 }
 
-const DummiesPage: React.FC = () => {
-	const [dummies, setDummies] = useState<Data[]>([]);
+const AllCompanyPage: React.FC = () => {
+	const [companies, setCompanies] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// Trạng thái cho các trường nhập liệu
+	const [searchCompanyCodeInput, setSearchCompanyCodeInput] =
+		useState<string>("");
+	const [searchCompanyNameInput, setSearchCompanyNameInput] =
+		useState<string>("");
+	const [searchIndustryCodeLevel2Input, setSearchIndustryCodeLevel2Input] =
+		useState<string>("");
+
+	// Trạng thái cho các tiêu chí tìm kiếm thực tế
+	const [searchCompanyCode, setSearchCompanyCode] = useState<string>("");
+	const [searchCompanyName, setSearchCompanyName] = useState<string>("");
+	const [searchIndustryCodeLevel2, setSearchIndustryCodeLevel2] =
+		useState<string>("");
+
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [totalPages, setTotalPages] = useState<number>(1);
@@ -40,11 +51,13 @@ const DummiesPage: React.FC = () => {
 			try {
 				const response = await CompanyAPI.getAllCompany(
 					currentPage,
-					itemsPerPage
-					// statusFilter
+					itemsPerPage,
+					searchCompanyCode,
+					searchCompanyName,
+					searchIndustryCodeLevel2
 				);
 				console.log("response: ", response);
-				setDummies(response.data.data || []);
+				setCompanies(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
@@ -55,10 +68,19 @@ const DummiesPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
+	}, [
+		currentPage,
+		itemsPerPage,
+		searchCompanyCode,
+		searchCompanyName,
+		searchIndustryCodeLevel2,
+	]);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSearchCompanyCode(searchCompanyCodeInput.trim());
+		setSearchCompanyName(searchCompanyNameInput.trim());
+		setSearchIndustryCodeLevel2(searchIndustryCodeLevel2Input.trim());
 	};
 
 	const handleItemsPerPageChange = (
@@ -120,7 +142,7 @@ const DummiesPage: React.FC = () => {
 	};
 
 	const handleAddNew = () => {
-		console.log("Adding new user");
+		console.log("Adding new company");
 	};
 
 	if (loading) {
@@ -179,25 +201,59 @@ const DummiesPage: React.FC = () => {
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+								<Form.Group controlId="searchCompanyCode">
+									<Form.Label>Company Code</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="By Company Code"
+										value={searchCompanyCodeInput}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchCompanyCodeInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchCompanyName">
+									<Form.Label>Company Name</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Company Name"
+										value={searchCompanyNameInput}
+										onChange={(e) =>
+											setSearchCompanyNameInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchIndustryCodeLevel2">
+									<Form.Label>
+										Industry Code Level 2
+									</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Industry Code Level 2"
+										value={searchIndustryCodeLevel2Input}
+										onChange={(e) =>
+											setSearchIndustryCodeLevel2Input(
+												e.target.value
+											)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
+								md={11}
 								className="d-flex justify-content-end col-spacing"
 							>
 								<Button
 									variant="primary"
-									className="mt-4"
+									className="mt-2"
 									onClick={handleSearch}
 								>
 									Search
@@ -213,15 +269,15 @@ const DummiesPage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th>Company code</th>
-								<th>Company name</th>
+								<th>Company Code</th>
+								<th>Company Name</th>
 								<th>Industry ID</th>
-								<th>Industry code level 2</th>
+								<th>Industry Code Level 2</th>
 								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							{dummies.map((data, index) => (
+							{companies.map((data, index) => (
 								<tr key={index}>
 									<td>{data.companyCode}</td>
 									<td>{data.companyName}</td>
@@ -278,4 +334,4 @@ const DummiesPage: React.FC = () => {
 	);
 };
 
-export default DummiesPage;
+export default AllCompanyPage;

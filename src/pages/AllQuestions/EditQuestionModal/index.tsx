@@ -6,7 +6,7 @@ interface Question {
 	topicCode: string;
 	name: string;
 	language: string;
-	type: string;
+	type: number;
 	answer1?: string;
 	answer2?: string;
 	answer3?: string;

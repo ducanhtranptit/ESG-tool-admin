@@ -166,20 +166,6 @@ const SideBar: React.FC = () => {
 										Dummies
 									</Link>
 								</li>
-								<li
-									className={
-										location.pathname === "/user-sections"
-											? "active"
-											: ""
-									}
-								>
-									<Link
-										to="/user-sections"
-										className="dropdown-item"
-									>
-										User Sections
-									</Link>
-								</li>
 							</ul>
 						)}
 					</li>

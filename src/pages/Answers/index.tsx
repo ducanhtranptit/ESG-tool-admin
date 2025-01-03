@@ -29,10 +29,20 @@ const AllAnswersPage: React.FC = () => {
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchInput, setSearchInput] = useState<string>(""); 
-	const [searchYearInput, setSearchYearInput] = useState<string>(""); 
+
+	// Bộ lọc mới
+	const [searchInput, setSearchInput] = useState<string>("");
+	const [searchYearInput, setSearchYearInput] = useState<string>("");
+	const [searchQuestionCodeInput, setSearchQuestionCodeInput] =
+		useState<string>("");
+	const [searchQuestionNameInput, setSearchQuestionNameInput] =
+		useState<string>("");
+
 	const [searchQuery, setSearchQuery] = useState<string>("");
-	const [searchYear, setSearchYear] = useState<string>(""); 
+	const [searchYear, setSearchYear] = useState<string>("");
+	const [searchQuestionCode, setSearchQuestionCode] = useState<string>("");
+	const [searchQuestionName, setSearchQuestionName] = useState<string>("");
+
 	const [totalPages, setTotalPages] = useState<number>(1);
 
 	useEffect(() => {
@@ -43,7 +53,9 @@ const AllAnswersPage: React.FC = () => {
 					currentPage,
 					itemsPerPage,
 					searchQuery,
-					searchYear 
+					searchYear,
+					searchQuestionCode,
+					searchQuestionName
 				);
 				setAccounts(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
@@ -56,12 +68,21 @@ const AllAnswersPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchQuery, searchYear]); 
+	}, [
+		currentPage,
+		itemsPerPage,
+		searchQuery,
+		searchYear,
+		searchQuestionCode,
+		searchQuestionName,
+	]);
 
 	const handleSearch = () => {
-		setSearchQuery(searchInput); 
-		setSearchYear(searchYearInput); 
-		setCurrentPage(1); 
+		setSearchQuery(searchInput);
+		setSearchYear(searchYearInput);
+		setSearchQuestionCode(searchQuestionCodeInput);
+		setSearchQuestionName(searchQuestionNameInput);
+		setCurrentPage(1);
 	};
 
 	const handleItemsPerPageChange = (
@@ -131,7 +152,6 @@ const AllAnswersPage: React.FC = () => {
 		);
 	}
 
-
 	return (
 		<div className="content-wrapper">
 			<ToastContainer />
@@ -157,7 +177,7 @@ const AllAnswersPage: React.FC = () => {
 				{isFilterOpen && (
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
-							<Col md={4} className="col-spacing">
+							<Col md={3} className="col-spacing">
 								<Form.Group controlId="searchQuery">
 									<Form.Label>
 										Search by Company Code
@@ -172,7 +192,7 @@ const AllAnswersPage: React.FC = () => {
 									/>
 								</Form.Group>
 							</Col>
-							<Col md={4} className="col-spacing">
+							<Col md={3} className="col-spacing">
 								<Form.Group controlId="searchYear">
 									<Form.Label>Search by Year</Form.Label>
 									<Form.Control
@@ -185,8 +205,42 @@ const AllAnswersPage: React.FC = () => {
 									/>
 								</Form.Group>
 							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchQuestionCode">
+									<Form.Label>
+										Search by Question Code
+									</Form.Label>
+									<Form.Control
+										type="search"
+										placeholder="Enter question code"
+										value={searchQuestionCodeInput}
+										onChange={(e) =>
+											setSearchQuestionCodeInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchQuestionName">
+									<Form.Label>
+										Search by Question Name
+									</Form.Label>
+									<Form.Control
+										type="search"
+										placeholder="Enter question name"
+										value={searchQuestionNameInput}
+										onChange={(e) =>
+											setSearchQuestionNameInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
 							<Col
-								md={2}
+								md={8}
 								className="d-flex justify-content-end col-spacing"
 							>
 								<Button

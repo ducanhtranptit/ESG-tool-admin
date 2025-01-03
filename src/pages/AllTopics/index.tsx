@@ -84,7 +84,11 @@ const TopicPage: React.FC = () => {
 				(searchTopicCode === "" ||
 					topic.topicCode
 						?.toLowerCase()
-						.includes(searchTopicCode.toLowerCase()))
+						.includes(searchTopicCode.toLowerCase())) &&
+				(languageFilter === "" ||
+					(topic.language &&
+						topic.language.toLowerCase() ===
+							languageFilter.toLowerCase()))
 			);
 		});
 		setFilteredTopics(filtered);
@@ -234,6 +238,8 @@ const TopicPage: React.FC = () => {
 											setLanguageFilter(e.target.value)
 										}
 									>
+										<option value="">All</option>{" "}
+										{/* Thêm tùy chọn All */}
 										<option value="vi">Vietnamese</option>
 										<option value="en">English</option>
 									</Form.Select>

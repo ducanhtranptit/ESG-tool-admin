@@ -15,18 +15,28 @@ import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	level1?: any;
-	level2?: any;
-	industryName?: any;
+	level1?: string;
+	level2?: string;
+	industryName?: string;
 }
 
-const DummiesPage: React.FC = () => {
-	const [dummies, setDummies] = useState<Data[]>([]);
+const IndustriesPage: React.FC = () => {
+	const [industries, setIndustries] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// Trạng thái cho các trường nhập liệu
+	const [searchLevel1Input, setSearchLevel1Input] = useState<string>("");
+	const [searchLevel2Input, setSearchLevel2Input] = useState<string>("");
+	const [searchIndustryNameInput, setSearchIndustryNameInput] =
+		useState<string>("");
+
+	// Trạng thái cho các tiêu chí tìm kiếm thực tế
+	const [searchLevel1, setSearchLevel1] = useState<string>("");
+	const [searchLevel2, setSearchLevel2] = useState<string>("");
+	const [searchIndustryName, setSearchIndustryName] = useState<string>("");
+
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [totalPages, setTotalPages] = useState<number>(1);
@@ -35,13 +45,15 @@ const DummiesPage: React.FC = () => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				console.log(statusFilter);
 				const response = await CompanyAPI.getAllIndustries(
 					currentPage,
-					itemsPerPage
-					// statusFilter
+					itemsPerPage,
+					searchLevel1,
+					searchLevel2,
+					searchIndustryName
 				);
-				setDummies(response.data.data || []);
+				console.log("response: ", response);
+				setIndustries(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
@@ -52,10 +64,19 @@ const DummiesPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
+	}, [
+		currentPage,
+		itemsPerPage,
+		searchLevel1,
+		searchLevel2,
+		searchIndustryName,
+	]);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSearchLevel1(searchLevel1Input.trim());
+		setSearchLevel2(searchLevel2Input.trim());
+		setSearchIndustryName(searchIndustryNameInput.trim());
 	};
 
 	const handleItemsPerPageChange = (
@@ -112,6 +133,14 @@ const DummiesPage: React.FC = () => {
 		return items;
 	};
 
+	const handleEdit = () => {
+		console.log("Editing item");
+	};
+
+	const handleAddNew = () => {
+		console.log("Adding new industry");
+	};
+
 	if (loading) {
 		return (
 			<div
@@ -134,12 +163,23 @@ const DummiesPage: React.FC = () => {
 				<div className="container-fluid">
 					<div className="row mb-2">
 						<div className="col-sm-6">
-							<h1>Company Score Management</h1>
+							<h1>Industries Management</h1>
 						</div>
 					</div>
 				</div>
 			</section>
 			<hr className="hr-line" />
+			<div className="d-flex justify-content-end mb-3">
+				<Button
+					className="add-new-button"
+					variant="primary"
+					size="sm"
+					onClick={handleAddNew}
+				>
+					Add New
+				</Button>
+			</div>
+
 			<Card className="shadow-sm card-filter">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
@@ -157,25 +197,57 @@ const DummiesPage: React.FC = () => {
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+								<Form.Group controlId="searchLevel1">
+									<Form.Label>
+										Level-1 Industry Code
+									</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="By Level-1 Industry Code"
+										value={searchLevel1Input}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchLevel1Input(e.target.value)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchLevel2">
+									<Form.Label>
+										Level-2 Industry Code
+									</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Level-2 Industry Code"
+										value={searchLevel2Input}
+										onChange={(e) =>
+											setSearchLevel2Input(e.target.value)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchIndustryName">
+									<Form.Label>Industry Name</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Industry Name"
+										value={searchIndustryNameInput}
+										onChange={(e) =>
+											setSearchIndustryNameInput(
+												e.target.value
+											)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
-								className="d-flex justify-content-end col-spacing"
+								md={11}
+								className="d-flex justify-content-end align-items-end col-spacing"
 							>
 								<Button
 									variant="primary"
-									className="mt-4"
+									className="mt-2"
 									onClick={handleSearch}
 								>
 									Search
@@ -197,7 +269,7 @@ const DummiesPage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{dummies.map((data, index) => (
+							{industries.map((data, index) => (
 								<tr key={index}>
 									<td>{data.level1}</td>
 									<td>{data.level2}</td>
@@ -244,4 +316,4 @@ const DummiesPage: React.FC = () => {
 	);
 };
 
-export default DummiesPage;
+export default IndustriesPage;

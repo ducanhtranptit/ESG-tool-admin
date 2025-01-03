@@ -15,25 +15,33 @@ import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	companyCode?: any;
-	year?: any;
-	environmentScore?: any;
-	environmentRank?: any;
-	socialScore?: any;
-	socialRank?: any;
-	governanceScore?: any;
-	governanceRank?: any;
-	esgScore?: any;
-	esgRank?: any;
+	companyCode?: string;
+	year?: number;
+	environmentScore?: number;
+	environmentRank?: number;
+	socialScore?: number;
+	socialRank?: number;
+	governanceScore?: number;
+	governanceRank?: number;
+	esgScore?: number;
+	esgRank?: number;
 }
 
-const DummiesPage: React.FC = () => {
-	const [dummies, setDummies] = useState<Data[]>([]);
+const CompanyScorePage: React.FC = () => {
+	const [companyScores, setCompanyScores] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// Trạng thái cho các trường nhập liệu
+	const [searchCompanyCodeInput, setSearchCompanyCodeInput] =
+		useState<string>("");
+	const [searchYearInput, setSearchYearInput] = useState<string>("");
+
+	// Trạng thái cho các tiêu chí tìm kiếm thực tế
+	const [searchCompanyCode, setSearchCompanyCode] = useState<string>("");
+	const [searchYear, setSearchYear] = useState<string>("");
+
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [totalPages, setTotalPages] = useState<number>(1);
@@ -44,11 +52,12 @@ const DummiesPage: React.FC = () => {
 			try {
 				const response = await CompanyAPI.getAllCompanyScore(
 					currentPage,
-					itemsPerPage
-					// statusFilter
+					itemsPerPage,
+					searchCompanyCode,
+					searchYear
 				);
 				console.log("response: ", response);
-				setDummies(response.data.data || []);
+				setCompanyScores(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
@@ -59,10 +68,12 @@ const DummiesPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
+	}, [currentPage, itemsPerPage, searchCompanyCode, searchYear]);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSearchCompanyCode(searchCompanyCodeInput.trim());
+		setSearchYear(searchYearInput.trim());
 	};
 
 	const handleItemsPerPageChange = (
@@ -119,6 +130,11 @@ const DummiesPage: React.FC = () => {
 		return items;
 	};
 
+	const handleAddNew = () => {
+		console.log("Adding new company score");
+		// Thêm logic để thêm mới nếu cần
+	};
+
 	if (loading) {
 		return (
 			<div
@@ -147,6 +163,17 @@ const DummiesPage: React.FC = () => {
 				</div>
 			</section>
 			<hr className="hr-line" />
+			<div className="d-flex justify-content-end mb-3">
+				<Button
+					className="add-new-button"
+					variant="primary"
+					size="sm"
+					onClick={handleAddNew}
+				>
+					Add New
+				</Button>
+			</div>
+
 			<Card className="shadow-sm card-filter">
 				<Card.Header
 					className="d-flex justify-content-between align-items-center"
@@ -163,21 +190,36 @@ const DummiesPage: React.FC = () => {
 				{isFilterOpen && (
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
-							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchCompanyCode">
+									<Form.Label>Company Code</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="By Company Code"
+										value={searchCompanyCodeInput}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchCompanyCodeInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchYear">
+									<Form.Label>Year</Form.Label>
+									<Form.Control
+										type="number"
+										placeholder="By Year"
+										value={searchYearInput}
+										onChange={(e) =>
+											setSearchYearInput(e.target.value)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
+								md={1}
 								className="d-flex justify-content-end col-spacing"
 							>
 								<Button
@@ -198,7 +240,7 @@ const DummiesPage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th>Company code</th>
+								<th>Company Code</th>
 								<th>Year</th>
 								<th>Environment Score</th>
 								<th>Environment Rank</th>
@@ -211,7 +253,7 @@ const DummiesPage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{dummies.map((data, index) => (
+							{companyScores.map((data, index) => (
 								<tr key={index}>
 									<td>{data.companyCode}</td>
 									<td>{data.year}</td>
@@ -265,4 +307,4 @@ const DummiesPage: React.FC = () => {
 	);
 };
 
-export default DummiesPage;
+export default CompanyScorePage;

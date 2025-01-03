@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import QuestionAPI from "../../api/question";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
 	Table,
@@ -16,10 +15,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	questionCode?: any;
-	questionName?: any;
-	answer?: any;
-	dummy?: any;
+	questionCode?: string;
+	questionName?: string;
+	answer?: string;
+	dummy?: string;
 }
 
 const DummiesPage: React.FC = () => {
@@ -27,8 +26,17 @@ const DummiesPage: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// Trạng thái cho các trường nhập liệu
+	const [searchQuestionCodeInput, setSearchQuestionCodeInput] =
+		useState<string>("");
+	const [searchQuestionNameInput, setSearchQuestionNameInput] =
+		useState<string>("");
+
+	// Trạng thái cho các tiêu chí tìm kiếm thực tế
+	const [searchQuestionCode, setSearchQuestionCode] = useState<string>("");
+	const [searchQuestionName, setSearchQuestionName] = useState<string>("");
+
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [totalPages, setTotalPages] = useState<number>(1);
@@ -39,8 +47,9 @@ const DummiesPage: React.FC = () => {
 			try {
 				const response = await QuestionAPI.getAllDummies(
 					currentPage,
-					itemsPerPage
-					// statusFilter
+					itemsPerPage,
+					searchQuestionCode,
+					searchQuestionName
 				);
 				console.log("response: ", response);
 				setDummies(response.data.data || []);
@@ -54,10 +63,12 @@ const DummiesPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
+	}, [currentPage, itemsPerPage, searchQuestionCode, searchQuestionName]);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSearchQuestionCode(searchQuestionCodeInput.trim());
+		setSearchQuestionName(searchQuestionNameInput.trim());
 	};
 
 	const handleItemsPerPageChange = (
@@ -178,25 +189,42 @@ const DummiesPage: React.FC = () => {
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+								<Form.Group controlId="searchQuestionCode">
+									<Form.Label>Question Code</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="By Question Code"
+										value={searchQuestionCodeInput}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchQuestionCodeInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchQuestionName">
+									<Form.Label>Question Name</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Question Name"
+										value={searchQuestionNameInput}
+										onChange={(e) =>
+											setSearchQuestionNameInput(
+												e.target.value
+											)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={8}
-								className="d-flex justify-content-end col-spacing"
+								md={5}
+								className="d-flex justify-content-end align-items-end col-spacing"
 							>
 								<Button
 									variant="primary"
-									className="mt-4"
+									className="mt-2"
 									onClick={handleSearch}
 								>
 									Search
@@ -212,8 +240,8 @@ const DummiesPage: React.FC = () => {
 					<Table className="table table-bordered">
 						<thead>
 							<tr>
-								<th>Question code</th>
-								<th>Question name</th>
+								<th>Question Code</th>
+								<th>Question Name</th>
 								<th>Answer</th>
 								<th>Dummy</th>
 								<th>Action</th>

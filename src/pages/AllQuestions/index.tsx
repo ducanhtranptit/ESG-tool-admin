@@ -19,7 +19,7 @@ interface Question {
 	topicCode: string;
 	name: string;
 	language: string;
-	type: string;
+	type: number; // Đã đổi từ string thành number nếu cần
 	answer1?: string;
 	answer2?: string;
 	answer3?: string;
@@ -33,9 +33,6 @@ interface Question {
 }
 
 const AllQuestionPage: React.FC = () => {
-	// -------------------------------------
-	// Chỉnh sửa: Tạo thêm state 'allQuestions' để lưu toàn bộ dữ liệu
-	// -------------------------------------
 	const [allQuestions, setAllQuestions] = useState<Question[]>([]);
 	const [questions, setQuestions] = useState<Question[]>([]);
 
@@ -46,6 +43,9 @@ const AllQuestionPage: React.FC = () => {
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
 	const [searchName, setSearchName] = useState<string>("");
 	const [searchTopic, setSearchTopic] = useState<string>("");
+	const [searchQuestionCode, setSearchQuestionCode] = useState<string>("");
+	const [searchType, setSearchType] = useState<string>("");
+	const [searchLanguage, setSearchLanguage] = useState<string>("");
 
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
@@ -57,10 +57,6 @@ const AllQuestionPage: React.FC = () => {
 			try {
 				setLoading(true);
 				const response = await QuestionAPI.getAllQuestions();
-
-				// -------------------------------------
-				// Chỉnh sửa: Lưu dữ liệu vào cả allQuestions và questions
-				// -------------------------------------
 				setAllQuestions(response.data || []);
 				setQuestions(response.data || []);
 				setLoading(false);
@@ -138,19 +134,40 @@ const AllQuestionPage: React.FC = () => {
 		setCurrentPage(1);
 	};
 
-	// -------------------------------------
-	// Chỉnh sửa: hàm handleSearch filter ngay trên allQuestions
-	// -------------------------------------
 	const handleSearch = () => {
 		const filtered = allQuestions.filter((q) => {
+			console.log("q.type:", q.type, "Type of q.type:", typeof q.type); // Kiểm tra kiểu dữ liệu
 			const nameMatch = q.name
 				.toLowerCase()
 				.includes(searchName.toLowerCase().trim());
 			const topicMatch = q.topicCode
 				.toLowerCase()
 				.includes(searchTopic.toLowerCase().trim());
-			return nameMatch && topicMatch;
+			const questionCodeMatch = q.questionCode
+				.toLowerCase()
+				.includes(searchQuestionCode.toLowerCase().trim());
+
+			// Cách 1: So sánh sau khi chuyển q.type thành string
+			const typeMatch = searchType
+				? q.type.toString() === searchType
+				: true;
+
+			// Hoặc Cách 2: So sánh sau khi chuyển searchType thành number
+			// const typeMatch = searchType ? q.type === Number(searchType) : true;
+
+			const languageMatch = searchLanguage
+				? q.language === searchLanguage
+				: true;
+
+			return (
+				nameMatch &&
+				topicMatch &&
+				questionCodeMatch &&
+				typeMatch &&
+				languageMatch
+			);
 		});
+		console.log("filtered: ", filtered);
 		setQuestions(filtered);
 		setCurrentPage(1);
 	};
@@ -230,9 +247,13 @@ const AllQuestionPage: React.FC = () => {
 										type="text"
 										placeholder="Search by name"
 										value={searchName}
-										onChange={(e) =>
-											setSearchName(e.target.value)
-										}
+										onChange={(e) => {
+											setSearchName(e.target.value);
+											console.log(
+												"Search Name:",
+												e.target.value
+											);
+										}}
 									/>
 								</Form.Group>
 							</Col>
@@ -246,15 +267,82 @@ const AllQuestionPage: React.FC = () => {
 										type="text"
 										placeholder="Search by topic code"
 										value={searchTopic}
-										onChange={(e) =>
-											setSearchTopic(e.target.value)
-										}
+										onChange={(e) => {
+											setSearchTopic(e.target.value);
+											console.log(
+												"Search Topic:",
+												e.target.value
+											);
+										}}
 									/>
 								</Form.Group>
 							</Col>
 
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchByQuestionCode">
+									<Form.Label>
+										Search by question code
+									</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="Search by question code"
+										value={searchQuestionCode}
+										onChange={(e) => {
+											setSearchQuestionCode(
+												e.target.value
+											);
+											console.log(
+												"Search Question Code:",
+												e.target.value
+											);
+										}}
+									/>
+								</Form.Group>
+							</Col>
+
+							<Col md={2} className="col-spacing">
+								<Form.Group controlId="searchByType">
+									<Form.Label>Type</Form.Label>
+									<Form.Select
+										value={searchType}
+										onChange={(e) => {
+											setSearchType(e.target.value);
+											console.log(
+												"Search Type:",
+												e.target.value
+											);
+										}}
+									>
+										<option value="">All</option>
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+									</Form.Select>
+								</Form.Group>
+							</Col>
+
+							<Col md={2} className="col-spacing">
+								<Form.Group controlId="searchByLanguage">
+									<Form.Label>Language</Form.Label>
+									<Form.Select
+										value={searchLanguage}
+										onChange={(e) => {
+											setSearchLanguage(e.target.value);
+											console.log(
+												"Search Language:",
+												e.target.value
+											);
+										}}
+									>
+										<option value="">All</option>
+										<option value="vi">VI</option>
+										<option value="en">EN</option>
+									</Form.Select>
+								</Form.Group>
+							</Col>
+
 							<Col
-								md={5}
+								md={7}
 								className="d-flex justify-content-end col-spacing"
 							>
 								<Button

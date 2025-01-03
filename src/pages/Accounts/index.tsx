@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import UserAPI from "../../api/user";
 import { Spinner, Table, Button, Card, Form, Row, Col } from "react-bootstrap";
 import EditUserInformation from "./EditUserInformation";
@@ -14,6 +13,7 @@ interface Account {
 }
 
 const AccountPage: React.FC = () => {
+	const [allAccounts, setAllAccounts] = useState<Account[]>([]);
 	const [accounts, setAccounts] = useState<Account[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
@@ -21,16 +21,19 @@ const AccountPage: React.FC = () => {
 	const [currentUsername, setCurrentUsername] = useState<string>("");
 	const [currentCompanyCode, setCurrentCompanyCode] = useState<string>("");
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
+
+	// States for filters
 	const [searchUsername, setSearchUsername] = useState<string>("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [searchCompanyCode, setSearchCompanyCode] = useState<string>("");
 
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
 				const response = await UserAPI.getAllAccounts();
-				console.log(response.data);
-				setAccounts(response.data);
+				setAllAccounts(response.data || []);
+				setAccounts(response.data || []);
 				setLoading(false);
 			} catch (error) {
 				setError("Không thể lấy dữ liệu từ API");
@@ -41,19 +44,31 @@ const AccountPage: React.FC = () => {
 		fetchData();
 	}, []);
 
-	const handleEdit = (username: string, companyCode: string) => {
-		setCurrentUsername(username);
-		setCurrentCompanyCode(companyCode);
-		setShowModal(true);
-	};
-
 	const handleSearch = () => {
-		console.log(`Searching for username: ${searchUsername}`);
-		console.log(`Filtering by status: ${statusFilter}`);
+		const filtered = allAccounts.filter((account) => {
+			const usernameMatch = account.username
+				.toLowerCase()
+				.includes(searchUsername.toLowerCase().trim());
+			const statusMatch = statusFilter
+				? account.status === statusFilter
+				: true;
+			const companyMatch = account.company
+				.toLowerCase()
+				.includes(searchCompanyCode.toLowerCase().trim());
+
+			return usernameMatch && statusMatch && companyMatch;
+		});
+		setAccounts(filtered);
 	};
 
 	const handleAddNew = () => {
 		console.log("Adding new user");
+	};
+
+	const handleEdit = (username: string, companyCode: string) => {
+		setCurrentUsername(username);
+		setCurrentCompanyCode(companyCode);
+		setShowModal(true);
 	};
 
 	if (loading) {
@@ -110,6 +125,19 @@ const AccountPage: React.FC = () => {
 				{isFilterOpen && (
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
+							<Col md={3} className="col-spacing">
+								<Form.Group controlId="searchUsername">
+									<Form.Label>Search by Username</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="Enter username"
+										value={searchUsername}
+										onChange={(e) =>
+											setSearchUsername(e.target.value)
+										}
+									/>
+								</Form.Group>
+							</Col>
 							<Col md={2} className="col-spacing">
 								<Form.Group controlId="filterStatus">
 									<Form.Label>Status</Form.Label>
@@ -120,28 +148,30 @@ const AccountPage: React.FC = () => {
 										}
 									>
 										<option value="">ALL</option>
-										<option value="Active">ACTIVE</option>
+										<option value="Active">Active</option>
 										<option value="Inactive">
-											INACTIVE
+											Inactive
 										</option>
 									</Form.Select>
 								</Form.Group>
 							</Col>
 							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+								<Form.Group controlId="searchCompanyCode">
+									<Form.Label>
+										Search by Company Code
+									</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name, username, email"
-										value={searchUsername}
+										placeholder="Enter company code"
+										value={searchCompanyCode}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchCompanyCode(e.target.value)
 										}
 									/>
 								</Form.Group>
 							</Col>
 							<Col
-								md={5}
+								md={4}
 								className="d-flex justify-content-end col-spacing"
 							>
 								<Button
@@ -187,7 +217,7 @@ const AccountPage: React.FC = () => {
 												)
 											}
 										>
-											<FaEdit /> Sửa
+											<FaEdit /> Edit
 										</Button>
 									</td>
 								</tr>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import CompanyAPI from "../../api/company";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import {
 	Spinner,
 	Table,
@@ -16,21 +15,32 @@ import { toast, ToastContainer } from "react-toastify";
 import "./styles.css";
 
 interface Data {
-	metricId?: any;
-	criteriaName?: any;
-	companyCode?: any;
-	year?: any;
-	metric?: any;
-	rank?: any;
+	metricId?: string;
+	criteriaName?: string;
+	companyCode?: string;
+	year?: number;
+	metric?: string;
+	rank?: number;
 }
 
-const DummiesPage: React.FC = () => {
-	const [dummies, setDummies] = useState<Data[]>([]);
+const CompanyMetricPage: React.FC = () => {
+	const [companyMetrics, setCompanyMetrics] = useState<Data[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(true);
-	const [searchUsername, setSearchUsername] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+
+	// Trạng thái cho các trường nhập liệu
+	const [searchCriteriaNameInput, setSearchCriteriaNameInput] =
+		useState<string>("");
+	const [searchCompanyCodeInput, setSearchCompanyCodeInput] =
+		useState<string>("");
+	const [searchYearInput, setSearchYearInput] = useState<string>("");
+
+	// Trạng thái cho các tiêu chí tìm kiếm thực tế
+	const [searchCriteriaName, setSearchCriteriaName] = useState<string>("");
+	const [searchCompanyCode, setSearchCompanyCode] = useState<string>("");
+	const [searchYear, setSearchYear] = useState<string>("");
+
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 	const [totalPages, setTotalPages] = useState<number>(1);
@@ -41,11 +51,13 @@ const DummiesPage: React.FC = () => {
 			try {
 				const response = await CompanyAPI.getAllCompanyMetric(
 					currentPage,
-					itemsPerPage
-					// statusFilter
+					itemsPerPage,
+					searchCriteriaName,
+					searchCompanyCode,
+					searchYear
 				);
 				console.log("response: ", response);
-				setDummies(response.data.data || []);
+				setCompanyMetrics(response.data.data || []);
 				setTotalPages(response.data.totalPages || 1);
 				setLoading(false);
 			} catch (error) {
@@ -56,10 +68,19 @@ const DummiesPage: React.FC = () => {
 		};
 
 		fetchData();
-	}, [currentPage, itemsPerPage, searchUsername, statusFilter]);
+	}, [
+		currentPage,
+		itemsPerPage,
+		searchCriteriaName,
+		searchCompanyCode,
+		searchYear,
+	]);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSearchCriteriaName(searchCriteriaNameInput.trim());
+		setSearchCompanyCode(searchCompanyCodeInput.trim());
+		setSearchYear(searchYearInput.trim());
 	};
 
 	const handleItemsPerPageChange = (
@@ -116,12 +137,14 @@ const DummiesPage: React.FC = () => {
 		return items;
 	};
 
-	const handleEdit = () => {
-		console.log("Editing item");
+	const handleEdit = (metricId: string) => {
+		console.log("Editing item with Metric ID:", metricId);
+		// Bạn có thể thêm logic để điều hướng đến trang chỉnh sửa hoặc mở modal chỉnh sửa tại đây
 	};
 
 	const handleAddNew = () => {
-		console.log("Adding new user");
+		console.log("Adding new company metric");
+		// Bạn có thể thêm logic để điều hướng đến trang thêm mới hoặc mở modal thêm mới tại đây
 	};
 
 	if (loading) {
@@ -179,15 +202,45 @@ const DummiesPage: React.FC = () => {
 				{isFilterOpen && (
 					<Card.Body>
 						<Row className="align-items-center row-spacing">
-							<Col md={3} className="col-spacing">
-								<Form.Group controlId="searchUsername">
-									<Form.Label>Search</Form.Label>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchCriteriaName">
+									<Form.Label>Criteria Name</Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="By name"
-										value={searchUsername}
+										placeholder="By Criteria Name"
+										value={searchCriteriaNameInput}
 										onChange={(e) =>
-											setSearchUsername(e.target.value)
+											setSearchCriteriaNameInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchCompanyCode">
+									<Form.Label>Company Code</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="By Company Code"
+										value={searchCompanyCodeInput}
+										onChange={(e) =>
+											setSearchCompanyCodeInput(
+												e.target.value
+											)
+										}
+									/>
+								</Form.Group>
+							</Col>
+							<Col md={4} className="col-spacing">
+								<Form.Group controlId="searchYear">
+									<Form.Label>Year</Form.Label>
+									<Form.Control
+										type="number"
+										placeholder="By Year"
+										value={searchYearInput}
+										onChange={(e) =>
+											setSearchYearInput(e.target.value)
 										}
 									/>
 								</Form.Group>
@@ -216,7 +269,7 @@ const DummiesPage: React.FC = () => {
 							<tr>
 								<th>Metric ID</th>
 								<th>Criteria Name</th>
-								<th>Company code</th>
+								<th>Company Code</th>
 								<th>Year</th>
 								<th>Metric</th>
 								<th>Rank</th>
@@ -224,7 +277,7 @@ const DummiesPage: React.FC = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{dummies.map((data, index) => (
+							{companyMetrics.map((data, index) => (
 								<tr key={index}>
 									<td>{data.metricId}</td>
 									<td>{data.criteriaName}</td>
@@ -236,7 +289,9 @@ const DummiesPage: React.FC = () => {
 										<Button
 											variant="primary"
 											size="sm"
-											onClick={() => handleEdit()}
+											onClick={() =>
+												handleEdit(data.metricId || "")
+											}
 										>
 											<FaEdit /> Sửa
 										</Button>
@@ -283,4 +338,4 @@ const DummiesPage: React.FC = () => {
 	);
 };
 
-export default DummiesPage;
+export default CompanyMetricPage;
